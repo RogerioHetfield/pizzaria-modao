@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizzaria Modão - Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="admin-body">
+
+  <!-- Cabeçalho -->
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="logo">⚙️ <span id="adminLogo">Admin</span></h1>
+      <a href="index.html" class="btn-cart">← Voltar ao Cardápio</a>
+    </div>
+  </header>
+
+  <!-- Menu de abas -->
+  <nav class="abas">
+    <button class="aba ativa" data-aba="pedidos">📦 Pedidos <span id="badgePedidos" class="badge"></span></button>
+    <button class="aba" data-aba="produtos">🍕 Produtos</button>
+    <button class="aba" data-aba="categorias">🏷️ Categorias</button>
+    <button class="aba" data-aba="clientes">👤 Clientes</button>
+    <button class="aba" data-aba="funcionarios">👷 Funcionários</button>
+    <button class="aba" data-aba="config">⚙️ Configurações</button>
+  </nav>
+
+  <main class="container admin-container">
+
+    <!-- =========================
+         📦 PEDIDOS
+    ========================== -->
+    <section id="painelPedidos" class="painel">
+      <div class="painel-cabecalho">
+        <h2>Pedidos</h2>
+        <div class="filtro-status">
+          <select id="filtroStatus">
+            <option value="">Todos os status</option>
+            <option value="Recebido">Recebido</option>
+            <option value="Em preparo">Em preparo</option>
+            <option value="Saiu para entrega">Saiu para entrega</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+      </div>
+      <div id="listaPedidos" class="lista-pedidos"></div>
+    </section>
+
+    <!-- =========================
+         🍕 PRODUTOS
+    ========================== -->
+    <section id="painelProdutos" class="painel escondido">
+      <div class="card-form">
+        <h2 id="tituloForm">Adicionar Novo Produto</h2>
+        <form id="formProduto" class="form-produto">
+          <input type="hidden" id="produtoId" />
+
+          <label>Nome
+            <input type="text" id="prodNome" required />
+          </label>
+          <label>Descrição
+            <textarea id="prodDescricao" rows="2" required></textarea>
+          </label>
+          <label>Preço (R$)
+            <input type="number" id="prodPreco" min="0" step="0.01" required />
+          </label>
+          <label>Imagem (URL)
+            <input type="url" id="prodImagem" placeholder="https://..." required />
+          </label>
+          <label>Categoria
+            <select id="prodCategoria" required></select>
+          </label>
+
+          <div class="acoes-form">
+            <button type="submit" class="btn-primario">Salvar</button>
+            <button type="button" id="btnCancelar" class="btn-secundario escondido">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <h2 class="sec-titulo">Produtos cadastrados</h2>
+      <div id="listaAdmin" class="lista-admin"></div>
+    </section>
+
+    <!-- =========================
+         🏷️ CATEGORIAS
+    ========================== -->
+    <section id="painelCategorias" class="painel escondido">
+      <div class="card-form">
+        <h2>Adicionar Categoria</h2>
+        <form id="formCategoria" class="form-produto">
+          <label>Nome da categoria
+            <input type="text" id="catNome" required placeholder="Ex: Promoções" />
+          </label>
+          <button type="submit" class="btn-primario">Adicionar</button>
+        </form>
+      </div>
+
+      <h2 class="sec-titulo">Categorias cadastradas</h2>
+      <p class="dica">Ao remover uma categoria, os produtos dela serão movidos para "Outros".</p>
+      <div id="listaCategorias" class="lista-admin"></div>
+    </section>
+
+    <!-- =========================
+         👤 CLIENTES
+    ========================== -->
+    <section id="painelClientes" class="painel escondido">
+      <h2>Clientes</h2>
+      <p class="dica">Clientes são registrados automaticamente quando fazem um pedido.</p>
+      <div id="listaClientes" class="lista-admin"></div>
+    </section>
+
+    <!-- =========================
+         👷 FUNCIONÁRIOS
+    ========================== -->
+    <section id="painelFuncionarios" class="painel escondido">
+      <div class="card-form">
+        <h2>Adicionar Funcionário</h2>
+        <form id="formFuncionario" class="form-produto">
+          <label>Nome
+            <input type="text" id="funcNome" required />
+          </label>
+          <label>Função
+            <select id="funcFuncao" required>
+              <option value="Atendente">Atendente</option>
+              <option value="Pizzaiolo">Pizzaiolo</option>
+              <option value="Entregador">Entregador</option>
+              <option value="Caixa">Caixa</option>
+              <option value="Gerente">Gerente</option>
+            </select>
+          </label>
+          <button type="submit" class="btn-primario">Adicionar</button>
+        </form>
+      </div>
+
+      <h2 class="sec-titulo">Equipe cadastrada</h2>
+      <div id="listaFuncionarios" class="lista-admin"></div>
+    </section>
+
+    <!-- =========================
+         ⚙️ CONFIGURAÇÕES
+    ========================== -->
+    <section id="painelConfig" class="painel escondido">
+      <div class="card-form">
+        <h2>Configurações da loja</h2>
+        <form id="formConfig" class="form-produto">
+          <label>Nome da loja
+            <input type="text" id="cfgNome" required />
+          </label>
+          <label>WhatsApp (com DDI + DDD)
+            <input type="text" id="cfgWhatsapp" required />
+          </label>
+          <label>Taxa de entrega (R$)
+            <input type="number" id="cfgTaxa" min="0" step="0.01" required />
+          </label>
+          <label>Valor mínimo do pedido (R$)
+            <input type="number" id="cfgMinimo" min="0" step="0.01" required />
+          </label>
+          <label>Cor principal do site
+            <input type="color" id="cfgCor" required style="height:46px; padding:4px;" />
+          </label>
+          <div class="linha-dupla">
+            <label>Abre às
+              <input type="time" id="cfgAbre" required />
+            </label>
+            <label>Fecha às
+              <input type="time" id="cfgFecha" required />
+            </label>
+          </div>
+          <button type="submit" class="btn-primario">Salvar configurações</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal de detalhe do pedido -->
+  <div id="modalPedido" class="modal escondido">
+    <div class="modal-conteudo">
+      <button class="fechar" data-fechar="modalPedido">×</button>
+      <div id="modalPedidoCorpo"></div>
+    </div>
+  </div>
+
+  <!-- Toast de feedback -->
+  <div id="toast" class="toast"></div>
+
+  <button class="btn-sair" onclick="sair()">Sair</button>
+
+  <script src="data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

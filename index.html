@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizzaria Modão - Cardápio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =========================
+       CABEÇALHO
+  ========================== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <h1 class="logo">🍕 <span id="nomeLoja">Pizzaria Modão</span></h1>
+        <span id="statusLoja" class="status-loja">Carregando...</span>
+      </div>
+      <button id="btnAbrirCarrinho" class="btn-cart">
+        🛒 Carrinho (<span id="qtdCarrinho">0</span>)
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================
+       BUSCA
+  ========================== -->
+  <div class="busca-wrap">
+    <input type="search" id="campoBusca" placeholder="🔍 Buscar produto..." />
+  </div>
+
+  <!-- =========================
+       MENU DE CATEGORIAS
+  ========================== -->
+  <nav class="categorias" id="categorias"></nav>
+
+  <!-- =========================
+       LISTA DE PRODUTOS
+  ========================== -->
+  <main class="container">
+    <section id="listaProdutos" class="grid-produtos"></section>
+  </main>
+
+  <!-- =========================
+       BOTÃO FLUTUANTE WHATSAPP
+  ========================== -->
+  <button id="btnFlutuante" class="btn-flutuante" title="Ver carrinho">
+    🛒 <span id="qtdFlutuante">0</span>
+  </button>
+
+  <!-- =========================
+       FEEDBACK (toast)
+  ========================== -->
+  <div id="toast" class="toast"></div>
+
+  <!-- =========================
+       MODAL DE DETALHE DO PRODUTO
+  ========================== -->
+  <div id="modalProduto" class="modal escondido">
+    <div class="modal-conteudo modal-produto">
+      <button class="fechar" data-fechar="modalProduto">×</button>
+      <img id="modalProdImg" src="" alt="" />
+      <div class="modal-prod-corpo">
+        <h2 id="modalProdNome"></h2>
+        <p class="modal-prod-categoria" id="modalProdCategoria"></p>
+        <p id="modalProdDescricao"></p>
+        <div class="preco" id="modalProdPreco"></div>
+        <button class="btn-add" id="modalAddBtn">Adicionar ao carrinho</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       MODAL DO CARRINHO
+<<<<<<< HEAD
+       
+  ========================== -->
+
+  <h1>TESTE NETLIFY</h1>
+  
+=======
+  ========================== -->
+>>>>>>> 0bcda0b595f96d2fa9a9e63ddeef5e6ed15c8cb1
+  <div id="modalCarrinho" class="modal escondido">
+    <div class="modal-conteudo">
+      <button class="fechar" data-fechar="modalCarrinho">×</button>
+      <h2>Seu Carrinho</h2>
+
+      <div id="itensCarrinho" class="itens-carrinho"></div>
+
+      <!-- Campo de observação -->
+      <label class="campo-observacao">
+        Observações do pedido (ex: sem cebola, borda recheada)
+        <textarea id="observacao" rows="2" placeholder="Sua observação..."></textarea>
+      </label>
+
+      <!-- Totais -->
+      <div class="totais">
+        <p>Subtotal: <strong>R$ <span id="subtotal">0,00</span></strong></p>
+        <p>Taxa de entrega: <strong>R$ <span id="taxa">0,00</span></strong></p>
+        <p class="total">Total: <strong>R$ <span id="total">0,00</span></strong></p>
+        <p id="avisoMinimo" class="aviso-minimo escondido"></p>
+      </div>
+
+      <!-- Formulário do cliente -->
+      <form id="formPedido" class="form-pedido">
+        <h3>Seus dados</h3>
+        <input type="text" id="nome" placeholder="Seu nome" required />
+        <input type="tel" id="telefone" placeholder="Seu telefone (DDD + número)" required />
+        <input type="text" id="endereco" placeholder="Endereço completo" required />
+
+        <button type="submit" id="btnEnviar" class="btn-whatsapp">
+          📱 Enviar pedido no WhatsApp
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rodapé com link admin -->
+  <footer class="footer">
+    <p>© <span id="nomeLojaRodape">Pizzaria Modão</span> - <a href="admin.html">RGR Systems</a></p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
