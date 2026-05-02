@@ -17,9 +17,12 @@
         <h1 class="logo">🍕 <span id="nomeLoja">Pizzaria Modão</span></h1>
         <span id="statusLoja" class="status-loja">Carregando...</span>
       </div>
-      <button id="btnAbrirCarrinho" class="btn-cart">
-        🛒 Carrinho (<span id="qtdCarrinho">0</span>)
-      </button>
+      <div class="header-acoes">
+        <button id="btnSobre" class="btn-cart" title="Informações da loja">ℹ️ Sobre</button>
+        <button id="btnAbrirCarrinho" class="btn-cart">
+          🛒 Carrinho (<span id="qtdCarrinho">0</span>)
+        </button>
+      </div>
     </div>
   </header>
 
@@ -43,16 +46,41 @@
   </main>
 
   <!-- =========================
-       BOTÃO FLUTUANTE WHATSAPP
+       BOTÃO FLUTUANTE
   ========================== -->
   <button id="btnFlutuante" class="btn-flutuante" title="Ver carrinho">
     🛒 <span id="qtdFlutuante">0</span>
   </button>
 
-  <!-- =========================
-       FEEDBACK (toast)
-  ========================== -->
+  <!-- Toast -->
   <div id="toast" class="toast"></div>
+
+  <!-- =========================
+       MODAL "SOBRE"
+  ========================== -->
+  <div id="modalSobre" class="modal escondido">
+    <div class="modal-conteudo">
+      <button class="fechar" data-fechar="modalSobre">×</button>
+      <h2>ℹ️ Sobre <span id="sobreNomeLoja"></span></h2>
+      <p id="sobreDescricao" class="sobre-descricao"></p>
+
+      <div class="sobre-bloco">
+        <h3>📍 Endereço</h3>
+        <p id="sobreEndereco"></p>
+      </div>
+
+      <div class="sobre-bloco">
+        <h3>📞 Contato</h3>
+        <p id="sobreWhatsapp"></p>
+        <div id="sobreRedes" class="sobre-redes"></div>
+      </div>
+
+      <div class="sobre-bloco">
+        <h3>🕒 Horário de funcionamento</h3>
+        <table class="tabela-horarios" id="sobreHorarios"></table>
+      </div>
+    </div>
+  </div>
 
   <!-- =========================
        MODAL DE DETALHE DO PRODUTO
@@ -73,7 +101,6 @@
 
   <!-- =========================
        MODAL DO CARRINHO
-
   ========================== -->
   <div id="modalCarrinho" class="modal escondido">
     <div class="modal-conteudo">
@@ -82,16 +109,54 @@
 
       <div id="itensCarrinho" class="itens-carrinho"></div>
 
-      <!-- Campo de observação -->
+      <!-- Observação -->
       <label class="campo-observacao">
         Observações do pedido (ex: sem cebola, borda recheada)
         <textarea id="observacao" rows="2" placeholder="Sua observação..."></textarea>
       </label>
 
+      <!-- CUPOM DE DESCONTO -->
+      <div class="bloco-cupom">
+        <h3>🎟️ Cupom de desconto</h3>
+        <div class="cupom-linha">
+          <input type="text" id="cupomInput" placeholder="Digite o código" maxlength="20" />
+          <button type="button" id="btnAplicarCupom" class="btn-cupom">Aplicar</button>
+        </div>
+        <p id="cupomStatus" class="cupom-status escondido"></p>
+      </div>
+
+      <!-- FORMA DE PAGAMENTO -->
+      <div class="bloco-pagamento">
+        <h3>💳 Forma de pagamento</h3>
+        <div class="pagamento-opcoes">
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="PIX" checked /> <span>🔷 PIX</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Cartão de Crédito" /> <span>💳 Crédito</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Cartão de Débito" /> <span>💳 Débito</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Dinheiro" /> <span>💵 Dinheiro</span></label>
+        </div>
+
+        <!-- Troco (aparece só se pagamento = Dinheiro) -->
+        <div id="blocoTroco" class="bloco-troco escondido">
+          <p>Precisa de troco?</p>
+          <div class="troco-opcoes">
+            <label><input type="radio" name="precisaTroco" value="nao" checked /> Não preciso</label>
+            <label><input type="radio" name="precisaTroco" value="sim" /> Sim</label>
+          </div>
+          <div id="campoTrocoValor" class="campo-troco-valor escondido">
+            <label>Troco para quanto? (R$)
+              <input type="number" id="trocoValor" min="0" step="0.01" placeholder="Ex: 100" />
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Totais -->
       <div class="totais">
         <p>Subtotal: <strong>R$ <span id="subtotal">0,00</span></strong></p>
         <p>Taxa de entrega: <strong>R$ <span id="taxa">0,00</span></strong></p>
+        <p id="linhaDesconto" class="linha-desconto escondido">
+          Desconto (<span id="dscPercentual"></span>): <strong>− R$ <span id="dscValor">0,00</span></strong>
+        </p>
         <p class="total">Total: <strong>R$ <span id="total">0,00</span></strong></p>
         <p id="avisoMinimo" class="aviso-minimo escondido"></p>
       </div>
@@ -110,12 +175,11 @@
     </div>
   </div>
 
-  <!-- Rodapé com link admin -->
+  <!-- Rodapé -->
   <footer class="footer">
-    <p>© <span id="nomeLojaRodape">Pizzaria Modão</span> - Desenvolvido por>RGR Systems</a></p>
+    <p>© <span id="nomeLojaRodape">Pizzaria Modão</span> - <a href="admin.html">Área Administrativa</a></p>
   </footer>
 
-  <!-- Scripts -->
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

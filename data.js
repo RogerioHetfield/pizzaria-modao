@@ -11,7 +11,19 @@ const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 // Outras chaves (carrinho, cliente, observacao) expiram em 7 dias
 const CHAVES_PERMANENTES = [
   "produtos", "config", "pedidos",
-  "categorias", "clientes", "funcionarios"
+  "categorias", "clientes", "funcionarios",
+  "cupons", "senhaAdmin"
+];
+
+// Dias da semana (chave usada nos horários + nome em português)
+const DIAS_SEMANA = [
+  { key: "dom", nome: "Domingo" },
+  { key: "seg", nome: "Segunda-feira" },
+  { key: "ter", nome: "Terça-feira" },
+  { key: "qua", nome: "Quarta-feira" },
+  { key: "qui", nome: "Quinta-feira" },
+  { key: "sex", nome: "Sexta-feira" },
+  { key: "sab", nome: "Sábado" }
 ];
 
 /* -----------------------------------------------------
@@ -19,87 +31,47 @@ const CHAVES_PERMANENTES = [
 ----------------------------------------------------- */
 const PRODUTOS_PADRAO = [
   // ----- TRADICIONAIS -----
-  {
-    id: 1,
-    nome: "Pizza Calabresa",
-    descricao: "Molho de tomate, mussarela, calabresa fatiada e cebola.",
-    preco: 45.90,
-    imagem: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600",
-    categoria: "Tradicionais"
-  },
-  {
-    id: 2,
-    nome: "Pizza Mussarela",
-    descricao: "Molho de tomate, mussarela derretida e orégano.",
-    preco: 39.90,
-    imagem: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600",
-    categoria: "Tradicionais"
-  },
-  {
-    id: 3,
-    nome: "Pizza Portuguesa",
-    descricao: "Mussarela, presunto, ovos, cebola, ervilha e azeitonas.",
-    preco: 49.90,
-    imagem: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=600",
-    categoria: "Tradicionais"
-  },
-
+  { id: 1, nome: "Pizza Calabresa", descricao: "Molho de tomate, mussarela, calabresa fatiada e cebola.", preco: 45.90, imagem: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600", categoria: "Tradicionais", ativo: true },
+  { id: 2, nome: "Pizza Mussarela", descricao: "Molho de tomate, mussarela derretida e orégano.", preco: 39.90, imagem: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600", categoria: "Tradicionais", ativo: true },
+  { id: 3, nome: "Pizza Portuguesa", descricao: "Mussarela, presunto, ovos, cebola, ervilha e azeitonas.", preco: 49.90, imagem: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=600", categoria: "Tradicionais", ativo: true },
   // ----- ESPECIAIS -----
-  {
-    id: 4,
-    nome: "Pizza Quatro Queijos",
-    descricao: "Mussarela, provolone, parmesão e gorgonzola.",
-    preco: 55.90,
-    imagem: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600",
-    categoria: "Especiais"
-  },
-  {
-    id: 5,
-    nome: "Pizza Frango com Catupiry",
-    descricao: "Frango desfiado, catupiry cremoso e mussarela.",
-    preco: 52.90,
-    imagem: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600",
-    categoria: "Especiais"
-  },
-
+  { id: 4, nome: "Pizza Quatro Queijos", descricao: "Mussarela, provolone, parmesão e gorgonzola.", preco: 55.90, imagem: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600", categoria: "Especiais", ativo: true },
+  { id: 5, nome: "Pizza Frango com Catupiry", descricao: "Frango desfiado, catupiry cremoso e mussarela.", preco: 52.90, imagem: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600", categoria: "Especiais", ativo: true },
   // ----- BEBIDAS -----
-  {
-    id: 6,
-    nome: "Coca-Cola 2L",
-    descricao: "Refrigerante Coca-Cola gelado, garrafa de 2 litros.",
-    preco: 12.00,
-    imagem: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=600",
-    categoria: "Bebidas"
-  },
-  {
-    id: 7,
-    nome: "Suco de Laranja 1L",
-    descricao: "Suco natural de laranja gelado.",
-    preco: 10.00,
-    imagem: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=600",
-    categoria: "Bebidas"
-  }
+  { id: 6, nome: "Coca-Cola 2L", descricao: "Refrigerante Coca-Cola gelado, garrafa de 2 litros.", preco: 12.00, imagem: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=600", categoria: "Bebidas", ativo: true },
+  { id: 7, nome: "Suco de Laranja 1L", descricao: "Suco natural de laranja gelado.", preco: 10.00, imagem: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=600", categoria: "Bebidas", ativo: true }
 ];
+
+// Horário padrão: aberto todo dia 18h às 23h
+function horariosPadrao() {
+  const h = {};
+  DIAS_SEMANA.forEach(d => {
+    h[d.key] = { abre: "18:00", fecha: "23:00", fechado: false };
+  });
+  // Segunda fechada por padrão (clichê de pizzaria)
+  h.seg.fechado = true;
+  return h;
+}
 
 // Configurações padrão da loja
 const CONFIG_PADRAO = {
   nomeLoja: "Pizzaria Modão",
+  descricao: "A melhor pizza artesanal da cidade, feita com ingredientes selecionados.",
   whatsapp: "5519991675464",
+  endereco: "Rua das Pizzas, 100 - Centro",
+  instagram: "",
+  facebook: "",
   taxa: 5.00,
   minimo: 30.00,
-  abre: "18:00",
-  fecha: "23:00",
-  cor: "#FF5722" // cor principal (laranja)
+  cor: "#FF5722",
+  horarios: horariosPadrao()
 };
 
 /* -----------------------------------------------------
    Salvar valor no LocalStorage com timestamp
 ----------------------------------------------------- */
 function salvarLS(chave, valor) {
-  const dados = {
-    valor: valor,
-    timestamp: Date.now()
-  };
+  const dados = { valor, timestamp: Date.now() };
   localStorage.setItem(chave, JSON.stringify(dados));
 }
 
@@ -109,15 +81,10 @@ function salvarLS(chave, valor) {
 function lerLS(chave) {
   const bruto = localStorage.getItem(chave);
   if (!bruto) return null;
-
   try {
     const dados = JSON.parse(bruto);
-    // Dados administrativos nunca expiram
-    if (CHAVES_PERMANENTES.includes(chave)) {
-      return dados.valor;
-    }
+    if (CHAVES_PERMANENTES.includes(chave)) return dados.valor;
     if (Date.now() - dados.timestamp > SETE_DIAS) {
-      // Dado vencido — apaga e retorna null
       localStorage.removeItem(chave);
       return null;
     }
@@ -128,49 +95,55 @@ function lerLS(chave) {
   }
 }
 
-/* -----------------------------------------------------
-   Apagar uma chave específica do LocalStorage
------------------------------------------------------ */
-function limparLS(chave) {
-  localStorage.removeItem(chave);
-}
+function limparLS(chave) { localStorage.removeItem(chave); }
 
 /* -----------------------------------------------------
-   Carregar produtos (do LocalStorage ou padrão)
+   PRODUTOS — garante que todos tenham .ativo (default true)
 ----------------------------------------------------- */
 function carregarProdutos() {
-  const salvos = lerLS("produtos");
-  if (salvos && Array.isArray(salvos) && salvos.length > 0) {
-    return salvos;
+  let salvos = lerLS("produtos");
+  if (!salvos || !Array.isArray(salvos) || salvos.length === 0) {
+    salvarLS("produtos", PRODUTOS_PADRAO);
+    return PRODUTOS_PADRAO;
   }
-  salvarLS("produtos", PRODUTOS_PADRAO);
-  return PRODUTOS_PADRAO;
+  // Backfill: produtos antigos sem .ativo viram ativo:true
+  let mudou = false;
+  salvos = salvos.map(p => {
+    if (p.ativo === undefined) { mudou = true; return { ...p, ativo: true }; }
+    return p;
+  });
+  if (mudou) salvarLS("produtos", salvos);
+  return salvos;
 }
 
 /* -----------------------------------------------------
-   Carregar configurações (mescla com padrões caso falte algo)
+   CONFIG — mescla com padrão e migra horário antigo
 ----------------------------------------------------- */
 function carregarConfig() {
   const salvas = lerLS("config");
-  const finais = { ...CONFIG_PADRAO, ...(salvas || {}) };
+  let finais = { ...CONFIG_PADRAO, ...(salvas || {}) };
+
+  // Migração: se havia abre/fecha único e não tem horarios, converte
+  if (salvas && salvas.abre && salvas.fecha && !salvas.horarios) {
+    finais.horarios = {};
+    DIAS_SEMANA.forEach(d => {
+      finais.horarios[d.key] = { abre: salvas.abre, fecha: salvas.fecha, fechado: false };
+    });
+  }
+  if (!finais.horarios) finais.horarios = horariosPadrao();
+
   if (!salvas) salvarLS("config", finais);
   return finais;
 }
 
 /* -----------------------------------------------------
-   CATEGORIAS — lista de categorias cadastradas
-   Inicializa com as categorias dos produtos padrão
+   CATEGORIAS
 ----------------------------------------------------- */
 function carregarCategorias() {
   const salvas = lerLS("categorias");
   if (salvas && Array.isArray(salvas) && salvas.length > 0) return salvas;
-
-  // Pega categorias únicas dos produtos atuais
   const prods = carregarProdutos();
-  const cats = [...new Set(prods.map(p => p.categoria))].map((nome, i) => ({
-    id: i + 1,
-    nome
-  }));
+  const cats = [...new Set(prods.map(p => p.categoria))].map((nome, i) => ({ id: i + 1, nome }));
   salvarLS("categorias", cats);
   return cats;
 }
@@ -178,48 +151,103 @@ function carregarCategorias() {
 /* -----------------------------------------------------
    PEDIDOS
 ----------------------------------------------------- */
-function carregarPedidos() {
-  return lerLS("pedidos") || [];
-}
-
-// Status disponíveis para um pedido (em ordem)
+function carregarPedidos() { return lerLS("pedidos") || []; }
 const STATUS_PEDIDO = ["Recebido", "Em preparo", "Saiu para entrega", "Finalizado"];
-
 function salvarPedido(pedido) {
   const lista = carregarPedidos();
-  lista.unshift(pedido); // mais recente em cima
+  lista.unshift(pedido);
   salvarLS("pedidos", lista);
 }
 
 /* -----------------------------------------------------
-   CLIENTES — registrados automaticamente quando pedem
-   Deduplicação pelo telefone
+   CLIENTES
 ----------------------------------------------------- */
-function carregarClientes() {
-  return lerLS("clientes") || [];
-}
+function carregarClientes() { return lerLS("clientes") || []; }
 
 function registrarCliente(dados) {
   const lista = carregarClientes();
   const idx = lista.findIndex(c => c.telefone === dados.telefone);
-  if (idx >= 0) {
-    // Atualiza dados (endereço pode ter mudado)
-    lista[idx] = { ...lista[idx], ...dados };
-  } else {
-    lista.push({ ...dados, criadoEm: new Date().toISOString() });
-  }
+  if (idx >= 0) lista[idx] = { ...lista[idx], ...dados };
+  else lista.push({ ...dados, criadoEm: new Date().toISOString() });
   salvarLS("clientes", lista);
 }
 
 /* -----------------------------------------------------
    FUNCIONÁRIOS
 ----------------------------------------------------- */
-function carregarFuncionarios() {
-  return lerLS("funcionarios") || [];
+function carregarFuncionarios() { return lerLS("funcionarios") || []; }
+
+/* -----------------------------------------------------
+   CUPONS — código, % desconto, ativo, valor mínimo opcional
+----------------------------------------------------- */
+function carregarCupons() { return lerLS("cupons") || []; }
+function salvarCupons(lista) { salvarLS("cupons", lista); }
+
+function validarCupom(codigo, subtotal) {
+  if (!codigo) return { erro: "Digite um código." };
+  const cup = carregarCupons().find(c =>
+    c.codigo.toUpperCase() === codigo.toUpperCase().trim() && c.ativo
+  );
+  if (!cup) return { erro: "Cupom inválido ou expirado." };
+  if (cup.minimo && subtotal < cup.minimo) {
+    return { erro: `Pedido mínimo para este cupom: R$ ${formatarPreco(cup.minimo)}` };
+  }
+  const desconto = +(subtotal * cup.percentual / 100).toFixed(2);
+  return { cupom: cup, desconto };
 }
 
 /* -----------------------------------------------------
-   Formatar data ISO em formato brasileiro DD/MM/YYYY HH:MM
+   AUTENTICAÇÃO — senha do painel admin (hash SHA-256)
+----------------------------------------------------- */
+const SENHA_PADRAO = "admin";
+
+async function hashSenha(senha) {
+  const enc = new TextEncoder();
+  const data = enc.encode(senha + "::pizzaria-modao::salt::v1");
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function inicializarSenhaAdmin() {
+  if (!lerLS("senhaAdmin")) {
+    const hash = await hashSenha(SENHA_PADRAO);
+    salvarLS("senhaAdmin", hash);
+  }
+}
+
+async function verificarSenha(senha) {
+  return (await hashSenha(senha)) === lerLS("senhaAdmin");
+}
+
+async function salvarNovaSenha(novaSenha) {
+  salvarLS("senhaAdmin", await hashSenha(novaSenha));
+}
+
+async function ehSenhaPadrao() { return await verificarSenha(SENHA_PADRAO); }
+
+/* -----------------------------------------------------
+   DASHBOARD — estatísticas do dia
+----------------------------------------------------- */
+function estatisticasHoje() {
+  const lista = lerLS("pedidos") || [];
+  const hoje = new Date();
+  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()).getTime();
+  const fim = inicio + 24 * 60 * 60 * 1000;
+
+  const pedidosHoje = lista.filter(p => {
+    const t = new Date(p.dataHora).getTime();
+    return t >= inicio && t < fim;
+  });
+
+  const vendas = pedidosHoje.reduce((s, p) => s + (p.total || 0), 0);
+  const pendentes = lista.filter(p => p.status !== "Finalizado").length;
+  const ticket = pedidosHoje.length > 0 ? vendas / pedidosHoje.length : 0;
+
+  return { pedidosHoje: pedidosHoje.length, vendasHoje: vendas, ticketMedio: ticket, pendentes };
+}
+
+/* -----------------------------------------------------
+   FORMATAÇÃO
 ----------------------------------------------------- */
 function formatarData(iso) {
   const d = new Date(iso);
@@ -228,41 +256,42 @@ function formatarData(iso) {
   return `${data} ${hora}`;
 }
 
-/* -----------------------------------------------------
-   Formatar número como moeda BR (sem símbolo)
------------------------------------------------------ */
 function formatarPreco(valor) {
   return Number(valor).toFixed(2).replace(".", ",");
 }
 
 /* -----------------------------------------------------
-   Verificar se a loja está aberta agora
-   Aceita horários que cruzam meia-noite (ex: 18:00 → 02:00)
+   HORÁRIO DE FUNCIONAMENTO (por dia da semana)
 ----------------------------------------------------- */
+function diaDaSemanaKey(date) {
+  return ["dom", "seg", "ter", "qua", "qui", "sex", "sab"][date.getDay()];
+}
+
+function horarioHoje(config) {
+  const h = config.horarios?.[diaDaSemanaKey(new Date())];
+  if (!h || h.fechado) return null;
+  return h;
+}
+
 function lojaAberta(config) {
+  const hoje = horarioHoje(config);
+  if (!hoje) return false;
+
   const agora = new Date();
   const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-  const [hAbre, mAbre] = config.abre.split(":").map(Number);
-  const [hFecha, mFecha] = config.fecha.split(":").map(Number);
-
+  const [hAbre, mAbre] = hoje.abre.split(":").map(Number);
+  const [hFecha, mFecha] = hoje.fecha.split(":").map(Number);
   const minAbre = hAbre * 60 + mAbre;
   const minFecha = hFecha * 60 + mFecha;
 
   if (minAbre === minFecha) return false;
-
-  if (minAbre < minFecha) {
-    // Horário normal (ex: 18:00 → 23:00)
-    return minutosAgora >= minAbre && minutosAgora < minFecha;
-  } else {
-    // Horário que cruza meia-noite (ex: 18:00 → 02:00)
-    return minutosAgora >= minAbre || minutosAgora < minFecha;
-  }
+  if (minAbre < minFecha) return minutosAgora >= minAbre && minutosAgora < minFecha;
+  // Cruza meia-noite (ex: 18:00 → 02:00)
+  return minutosAgora >= minAbre || minutosAgora < minFecha;
 }
 
 /* -----------------------------------------------------
-   Aplicar cor principal dinamicamente (via CSS variable)
-   Calcula uma versão mais escura para hover automaticamente.
+   COR principal dinâmica
 ----------------------------------------------------- */
 function aplicarCor(cor) {
   if (!cor) return;
@@ -271,7 +300,6 @@ function aplicarCor(cor) {
   document.documentElement.style.setProperty("--cor-principal-rgb", hexParaRgb(cor));
 }
 
-// Escurece um hex em N% (para o hover)
 function escurecerCor(hex, percent) {
   const num = parseInt(hex.replace("#", ""), 16);
   let r = (num >> 16) - Math.round(255 * percent / 100);
@@ -281,14 +309,13 @@ function escurecerCor(hex, percent) {
   return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
 }
 
-// Converte hex em "r, g, b" (para usar em rgba)
 function hexParaRgb(hex) {
   const num = parseInt(hex.replace("#", ""), 16);
   return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
 }
 
 /* -----------------------------------------------------
-   Mostrar toast (feedback visual)
+   TOAST
 ----------------------------------------------------- */
 function mostrarToast(mensagem) {
   const t = document.getElementById("toast");
@@ -296,5 +323,5 @@ function mostrarToast(mensagem) {
   t.textContent = mensagem;
   t.classList.add("ativo");
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => t.classList.remove("ativo"), 2000);
+  window._toastTimer = setTimeout(() => t.classList.remove("ativo"), 2200);
 }

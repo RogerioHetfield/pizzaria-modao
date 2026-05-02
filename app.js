@@ -1,9 +1,7 @@
 /* =====================================================
-   app.js
-   Lógica do CARDÁPIO + CARRINHO + ENVIO no WhatsApp
+   app.js — Cardápio + Carrinho + Pagamento + Cupom
 ===================================================== */
 
-// Estado da aplicação
 let produtos = carregarProdutos();
 let config = carregarConfig();
 let carrinho = lerLS("carrinho") || [];
@@ -11,14 +9,16 @@ let dadosCliente = lerLS("cliente") || { nome: "", telefone: "", endereco: "" };
 let categoriaAtiva = "Todas";
 let termoBusca = "";
 let aberta = false;
+let cupomAplicado = null; // { cupom, desconto }
 
-// Elementos do DOM
+// DOM
 const elListaProdutos = document.getElementById("listaProdutos");
 const elCategorias = document.getElementById("categorias");
 const elQtdCarrinho = document.getElementById("qtdCarrinho");
 const elQtdFlutuante = document.getElementById("qtdFlutuante");
 const elModalCarrinho = document.getElementById("modalCarrinho");
 const elModalProduto = document.getElementById("modalProduto");
+const elModalSobre = document.getElementById("modalSobre");
 const elItensCarrinho = document.getElementById("itensCarrinho");
 const elSubtotal = document.getElementById("subtotal");
 const elTaxa = document.getElementById("taxa");
@@ -31,15 +31,19 @@ const elStatusLoja = document.getElementById("statusLoja");
 const elNomeLoja = document.getElementById("nomeLoja");
 const elNomeLojaRodape = document.getElementById("nomeLojaRodape");
 const elObservacao = document.getElementById("observacao");
+const elCupomInput = document.getElementById("cupomInput");
+const elCupomStatus = document.getElementById("cupomStatus");
+const elBlocoTroco = document.getElementById("blocoTroco");
+const elCampoTrocoValor = document.getElementById("campoTrocoValor");
+const elLinhaDesc = document.getElementById("linhaDesconto");
+const elDscPerc = document.getElementById("dscPercentual");
+const elDscValor = document.getElementById("dscValor");
 
 /* -----------------------------------------------------
    Inicialização
 ----------------------------------------------------- */
 function iniciar() {
-  // Aplica cor principal configurada
   aplicarCor(config.cor);
-
-  // Aplica nome da loja em todos os lugares
   elNomeLoja.textContent = config.nomeLoja;
   elNomeLojaRodape.textContent = config.nomeLoja;
   document.title = config.nomeLoja + " - Cardápio";
@@ -50,67 +54,113 @@ function iniciar() {
   renderizarProdutos();
   atualizarCarrinho();
 
-  // Restaurar observação
   const obsSalva = lerLS("observacao");
   if (obsSalva) elObservacao.value = obsSalva;
 
-  // Botões para abrir/fechar carrinho
+  // Botões
   document.getElementById("btnAbrirCarrinho").addEventListener("click", abrirCarrinho);
   document.getElementById("btnFlutuante").addEventListener("click", abrirCarrinho);
+  document.getElementById("btnSobre").addEventListener("click", abrirSobre);
+  document.getElementById("btnAplicarCupom").addEventListener("click", aplicarCupom);
 
-  // Fechar modais (botão × com data-fechar)
+  // Fechar modais
   document.querySelectorAll("[data-fechar]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById(btn.dataset.fechar).classList.add("escondido");
     });
   });
-
-  // Fechar modal ao clicar fora
-  [elModalCarrinho, elModalProduto].forEach(modal => {
+  [elModalCarrinho, elModalProduto, elModalSobre].forEach(modal => {
     modal.addEventListener("click", e => {
       if (e.target === modal) modal.classList.add("escondido");
     });
   });
 
-  // Submeter pedido
-  elFormPedido.addEventListener("submit", enviarPedidoWhatsapp);
+  // Pagamento (mostra/esconde troco)
+  document.querySelectorAll('input[name="pagamento"]').forEach(r => {
+    r.addEventListener("change", atualizarBlocoTroco);
+  });
+  document.querySelectorAll('input[name="precisaTroco"]').forEach(r => {
+    r.addEventListener("change", atualizarCampoTroco);
+  });
 
-  // Salvar dados do formulário enquanto o usuário digita
+  // Form
+  elFormPedido.addEventListener("submit", enviarPedidoWhatsapp);
   ["nome", "telefone", "endereco"].forEach(id => {
     document.getElementById(id).addEventListener("input", salvarDadosCliente);
   });
   elObservacao.addEventListener("input", () => salvarLS("observacao", elObservacao.value));
 
-  // Busca em tempo real
+  // Busca
   elBusca.addEventListener("input", e => {
     termoBusca = e.target.value.toLowerCase().trim();
     renderizarProdutos();
   });
 
-  // Atualiza status da loja a cada minuto
   setInterval(atualizarStatusLoja, 60 * 1000);
 }
 
 /* -----------------------------------------------------
-   Status (Aberto / Fechado)
+   Status (Aberto / Fechado) + horário do dia
 ----------------------------------------------------- */
 function atualizarStatusLoja() {
   aberta = lojaAberta(config);
-  if (aberta) {
-    elStatusLoja.textContent = `🟢 Aberto agora (${config.abre} - ${config.fecha})`;
+  const h = horarioHoje(config);
+  if (aberta && h) {
+    elStatusLoja.textContent = `🟢 Aberto agora (${h.abre} - ${h.fecha})`;
     elStatusLoja.className = "status-loja aberto";
+  } else if (h) {
+    elStatusLoja.textContent = `🔴 Fechado (hoje: ${h.abre} às ${h.fecha})`;
+    elStatusLoja.className = "status-loja fechado";
   } else {
-    elStatusLoja.textContent = `🔴 Fechado (abre às ${config.abre})`;
+    elStatusLoja.textContent = `🔴 Fechado hoje`;
     elStatusLoja.className = "status-loja fechado";
   }
   atualizarBotaoEnvio();
 }
 
 /* -----------------------------------------------------
-   Renderizar botões de categoria
+   Modal "Sobre" — preenche e abre
+----------------------------------------------------- */
+function abrirSobre() {
+  document.getElementById("sobreNomeLoja").textContent = config.nomeLoja;
+  document.getElementById("sobreDescricao").textContent = config.descricao || "";
+  document.getElementById("sobreEndereco").textContent = config.endereco || "—";
+  document.getElementById("sobreWhatsapp").innerHTML =
+    `📱 <a href="https://wa.me/${config.whatsapp}" target="_blank">${config.whatsapp}</a>`;
+
+  // Redes sociais (só mostra se tiver)
+  const redes = document.getElementById("sobreRedes");
+  redes.innerHTML = "";
+  if (config.instagram) {
+    const u = config.instagram.replace("@", "");
+    redes.innerHTML += `<a href="https://instagram.com/${u}" target="_blank">📷 Instagram</a>`;
+  }
+  if (config.facebook) {
+    redes.innerHTML += `<a href="https://facebook.com/${config.facebook}" target="_blank">👍 Facebook</a>`;
+  }
+
+  // Horários por dia
+  const tbl = document.getElementById("sobreHorarios");
+  const hojeKey = diaDaSemanaKey(new Date());
+  tbl.innerHTML = DIAS_SEMANA.map(d => {
+    const h = config.horarios[d.key];
+    const eHoje = d.key === hojeKey;
+    const txt = h.fechado ? "Fechado" : `${h.abre} às ${h.fecha}`;
+    return `<tr class="${eHoje ? 'hoje' : ''}">
+      <td>${d.nome}${eHoje ? " (hoje)" : ""}</td>
+      <td class="${h.fechado ? 'dia-fechado' : ''}">${txt}</td>
+    </tr>`;
+  }).join("");
+
+  elModalSobre.classList.remove("escondido");
+}
+
+/* -----------------------------------------------------
+   Categorias + Produtos
 ----------------------------------------------------- */
 function renderizarCategorias() {
-  const cats = ["Todas", ...new Set(produtos.map(p => p.categoria))];
+  const ativos = produtos.filter(p => p.ativo !== false);
+  const cats = ["Todas", ...new Set(ativos.map(p => p.categoria))];
 
   elCategorias.innerHTML = "";
   cats.forEach(cat => {
@@ -126,17 +176,13 @@ function renderizarCategorias() {
   });
 }
 
-/* -----------------------------------------------------
-   Renderizar cards de produtos
-   (com filtro de categoria + busca)
------------------------------------------------------ */
 function renderizarProdutos() {
-  let filtrados = produtos;
+  // Cliente só vê produtos ativos
+  let filtrados = produtos.filter(p => p.ativo !== false);
 
   if (categoriaAtiva !== "Todas") {
     filtrados = filtrados.filter(p => p.categoria === categoriaAtiva);
   }
-
   if (termoBusca) {
     filtrados = filtrados.filter(p =>
       p.nome.toLowerCase().includes(termoBusca) ||
@@ -145,7 +191,6 @@ function renderizarProdutos() {
   }
 
   elListaProdutos.innerHTML = "";
-
   if (filtrados.length === 0) {
     elListaProdutos.innerHTML = "<p class='vazio'>Nenhum produto encontrado.</p>";
     return;
@@ -164,9 +209,7 @@ function renderizarProdutos() {
         <p>${produto.descricao}</p>
         <div class="preco">R$ ${formatarPreco(produto.preco)}</div>
         <button class="btn-add">Adicionar ao carrinho</button>
-      </div>
-    `;
-    // Clique no card abre detalhes (exceto no botão)
+      </div>`;
     card.addEventListener("click", e => {
       if (e.target.classList.contains("btn-add")) return;
       abrirDetalhe(produto);
@@ -179,9 +222,6 @@ function renderizarProdutos() {
   });
 }
 
-/* -----------------------------------------------------
-   Modal de detalhe do produto
------------------------------------------------------ */
 function abrirDetalhe(produto) {
   document.getElementById("modalProdImg").src = produto.imagem;
   document.getElementById("modalProdImg").alt = produto.nome;
@@ -189,71 +229,45 @@ function abrirDetalhe(produto) {
   document.getElementById("modalProdCategoria").textContent = produto.categoria;
   document.getElementById("modalProdDescricao").textContent = produto.descricao;
   document.getElementById("modalProdPreco").textContent = "R$ " + formatarPreco(produto.preco);
-
-  const btn = document.getElementById("modalAddBtn");
-  btn.onclick = () => {
+  document.getElementById("modalAddBtn").onclick = () => {
     adicionarAoCarrinho(produto);
     elModalProduto.classList.add("escondido");
   };
-
   elModalProduto.classList.remove("escondido");
 }
 
 /* -----------------------------------------------------
-   Carrinho — adicionar
+   Carrinho
 ----------------------------------------------------- */
 function adicionarAoCarrinho(produto) {
   const existente = carrinho.find(i => i.id === produto.id);
-  if (existente) {
-    existente.qtd += 1;
-  } else {
-    carrinho.push({
-      id: produto.id,
-      nome: produto.nome,
-      preco: produto.preco,
-      qtd: 1
-    });
-  }
+  if (existente) existente.qtd += 1;
+  else carrinho.push({ id: produto.id, nome: produto.nome, preco: produto.preco, qtd: 1 });
   salvarLS("carrinho", carrinho);
   atualizarCarrinho();
   mostrarToast(`✅ ${produto.nome} adicionado ao carrinho`);
 }
 
-/* -----------------------------------------------------
-   Carrinho — alterar quantidade
-   delta = +1 (aumenta) ou -1 (diminui)
-   Se quantidade chega a 0, remove o item
------------------------------------------------------ */
 function alterarQtd(id, delta) {
   const item = carrinho.find(i => i.id === id);
   if (!item) return;
-
   item.qtd += delta;
-  if (item.qtd <= 0) {
-    carrinho = carrinho.filter(i => i.id !== id);
-  }
+  if (item.qtd <= 0) carrinho = carrinho.filter(i => i.id !== id);
   salvarLS("carrinho", carrinho);
   atualizarCarrinho();
 }
 
-/* -----------------------------------------------------
-   Carrinho — remover item completamente
------------------------------------------------------ */
 function removerItem(id) {
   carrinho = carrinho.filter(i => i.id !== id);
   salvarLS("carrinho", carrinho);
   atualizarCarrinho();
 }
 
-/* -----------------------------------------------------
-   Atualizar visual do carrinho e totais
------------------------------------------------------ */
 function atualizarCarrinho() {
   const qtdTotal = carrinho.reduce((s, i) => s + i.qtd, 0);
   elQtdCarrinho.textContent = qtdTotal;
   elQtdFlutuante.textContent = qtdTotal;
 
-  // Lista de itens no modal
   elItensCarrinho.innerHTML = "";
   if (carrinho.length === 0) {
     elItensCarrinho.innerHTML = "<p class='vazio'>Seu carrinho está vazio.</p>";
@@ -274,8 +288,7 @@ function atualizarCarrinho() {
         <div class="item-total">
           <strong>R$ ${formatarPreco(item.preco * item.qtd)}</strong>
           <button class="btn-remover" title="Remover item">🗑️</button>
-        </div>
-      `;
+        </div>`;
       linha.querySelector('[data-acao="menos"]').addEventListener("click", () => alterarQtd(item.id, -1));
       linha.querySelector('[data-acao="mais"]').addEventListener("click", () => alterarQtd(item.id, +1));
       linha.querySelector(".btn-remover").addEventListener("click", () => removerItem(item.id));
@@ -283,38 +296,104 @@ function atualizarCarrinho() {
     });
   }
 
-  // Calcula totais
+  // Recalcular cupom (subtotal pode ter mudado)
+  if (cupomAplicado) revalidarCupom();
+
   const subtotal = carrinho.reduce((s, i) => s + (i.preco * i.qtd), 0);
   const taxa = carrinho.length > 0 ? config.taxa : 0;
-  const total = subtotal + taxa;
+  const desconto = cupomAplicado ? cupomAplicado.desconto : 0;
+  const total = Math.max(0, subtotal + taxa - desconto);
 
   elSubtotal.textContent = formatarPreco(subtotal);
   elTaxa.textContent = formatarPreco(taxa);
   elTotal.textContent = formatarPreco(total);
 
+  if (cupomAplicado) {
+    elDscPerc.textContent = `${cupomAplicado.cupom.percentual}%`;
+    elDscValor.textContent = formatarPreco(desconto);
+    elLinhaDesc.classList.remove("escondido");
+  } else {
+    elLinhaDesc.classList.add("escondido");
+  }
+
   atualizarBotaoEnvio();
 }
 
 /* -----------------------------------------------------
-   Habilita/desabilita botão de envio conforme regras:
-   - loja precisa estar aberta
-   - precisa atingir o valor mínimo
-   - carrinho não pode estar vazio
+   Cupom de desconto
+----------------------------------------------------- */
+function aplicarCupom() {
+  const codigo = elCupomInput.value.trim();
+  const subtotal = carrinho.reduce((s, i) => s + (i.preco * i.qtd), 0);
+
+  if (subtotal === 0) {
+    mostrarStatusCupom("Adicione produtos antes de aplicar um cupom.", "erro");
+    return;
+  }
+
+  const r = validarCupom(codigo, subtotal);
+  if (r.erro) {
+    cupomAplicado = null;
+    mostrarStatusCupom(r.erro, "erro");
+    atualizarCarrinho();
+    return;
+  }
+  cupomAplicado = { cupom: r.cupom, desconto: r.desconto };
+  mostrarStatusCupom(`✅ Cupom aplicado: ${r.cupom.percentual}% de desconto (− R$ ${formatarPreco(r.desconto)})`, "ok");
+  atualizarCarrinho();
+}
+
+function revalidarCupom() {
+  const subtotal = carrinho.reduce((s, i) => s + (i.preco * i.qtd), 0);
+  const r = validarCupom(cupomAplicado.cupom.codigo, subtotal);
+  if (r.erro) {
+    cupomAplicado = null;
+    mostrarStatusCupom(r.erro, "erro");
+  } else {
+    cupomAplicado = { cupom: r.cupom, desconto: r.desconto };
+  }
+}
+
+function mostrarStatusCupom(msg, tipo) {
+  elCupomStatus.textContent = msg;
+  elCupomStatus.className = "cupom-status " + (tipo === "ok" ? "cupom-ok" : "cupom-erro");
+}
+
+/* -----------------------------------------------------
+   Pagamento e troco
+----------------------------------------------------- */
+function pagamentoSelecionado() {
+  return document.querySelector('input[name="pagamento"]:checked').value;
+}
+
+function atualizarBlocoTroco() {
+  if (pagamentoSelecionado() === "Dinheiro") {
+    elBlocoTroco.classList.remove("escondido");
+  } else {
+    elBlocoTroco.classList.add("escondido");
+  }
+}
+
+function atualizarCampoTroco() {
+  const sim = document.querySelector('input[name="precisaTroco"]:checked').value === "sim";
+  elCampoTrocoValor.classList.toggle("escondido", !sim);
+}
+
+/* -----------------------------------------------------
+   Botão de envio (regras)
 ----------------------------------------------------- */
 function atualizarBotaoEnvio() {
   const subtotal = carrinho.reduce((s, i) => s + (i.preco * i.qtd), 0);
   let bloqueado = false;
   let aviso = "";
 
-  if (carrinho.length === 0) {
+  if (carrinho.length === 0) bloqueado = true;
+  else if (!aberta) {
     bloqueado = true;
-  } else if (!aberta) {
-    bloqueado = true;
-    aviso = `⚠️ A loja está fechada. Horário: ${config.abre} às ${config.fecha}.`;
+    aviso = "⚠️ A loja está fechada agora.";
   } else if (subtotal < config.minimo) {
     bloqueado = true;
-    const falta = config.minimo - subtotal;
-    aviso = `⚠️ Pedido mínimo: R$ ${formatarPreco(config.minimo)}. Faltam R$ ${formatarPreco(falta)}.`;
+    aviso = `⚠️ Pedido mínimo: R$ ${formatarPreco(config.minimo)}. Faltam R$ ${formatarPreco(config.minimo - subtotal)}.`;
   }
 
   if (aviso) {
@@ -323,20 +402,14 @@ function atualizarBotaoEnvio() {
   } else {
     elAvisoMinimo.classList.add("escondido");
   }
-
   elBtnEnviar.disabled = bloqueado;
   elBtnEnviar.classList.toggle("desabilitado", bloqueado);
 }
 
-/* -----------------------------------------------------
-   Abrir modal do carrinho
------------------------------------------------------ */
-function abrirCarrinho() {
-  elModalCarrinho.classList.remove("escondido");
-}
+function abrirCarrinho() { elModalCarrinho.classList.remove("escondido"); }
 
 /* -----------------------------------------------------
-   Preencher formulário com dados salvos
+   Form do cliente
 ----------------------------------------------------- */
 function preencherFormularioCliente() {
   document.getElementById("nome").value = dadosCliente.nome || "";
@@ -344,10 +417,6 @@ function preencherFormularioCliente() {
   document.getElementById("endereco").value = dadosCliente.endereco || "";
 }
 
-/* -----------------------------------------------------
-   Salvar dados do cliente conforme digita
-   (com timestamp via salvarLS — expira em 7 dias)
------------------------------------------------------ */
 function salvarDadosCliente() {
   dadosCliente = {
     nome: document.getElementById("nome").value,
@@ -358,19 +427,12 @@ function salvarDadosCliente() {
 }
 
 /* -----------------------------------------------------
-   Enviar pedido pelo WhatsApp (formato profissional)
+   Enviar pedido pelo WhatsApp
 ----------------------------------------------------- */
 function enviarPedidoWhatsapp(evento) {
   evento.preventDefault();
-
-  if (carrinho.length === 0) {
-    mostrarToast("Seu carrinho está vazio!");
-    return;
-  }
-  if (!aberta) {
-    mostrarToast("A loja está fechada no momento.");
-    return;
-  }
+  if (carrinho.length === 0) { mostrarToast("Seu carrinho está vazio!"); return; }
+  if (!aberta) { mostrarToast("A loja está fechada no momento."); return; }
 
   const nome = document.getElementById("nome").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
@@ -382,59 +444,80 @@ function enviarPedidoWhatsapp(evento) {
     return;
   }
 
-  // Valores
   const subtotal = carrinho.reduce((s, i) => s + (i.preco * i.qtd), 0);
   if (subtotal < config.minimo) {
     mostrarToast(`Pedido mínimo: R$ ${formatarPreco(config.minimo)}`);
     return;
   }
+
   const taxa = config.taxa;
-  const total = subtotal + taxa;
+  const desconto = cupomAplicado ? cupomAplicado.desconto : 0;
+  const total = Math.max(0, subtotal + taxa - desconto);
 
-  // Monta mensagem
-  let msg = `*${config.nomeLoja}*\n\n`;
-  msg += `📦 *Pedido*\n\n`;
-  msg += `👤 Cliente: ${nome}\n`;
-  msg += `📞 Telefone: ${telefone}\n`;
-  msg += `📍 Endereço: ${endereco}\n\n`;
-  msg += `🛒 *Itens:*\n`;
-
-  carrinho.forEach(item => {
-    const totalItem = item.preco * item.qtd;
-    msg += `• ${item.nome} (R$ ${formatarPreco(item.preco)}) x${item.qtd} = R$ ${formatarPreco(totalItem)}\n`;
-  });
-
-  if (observacao) {
-    msg += `\n💬 *Observação:*\n${observacao}\n`;
+  // Pagamento e troco
+  const pagamento = pagamentoSelecionado();
+  let trocoInfo = null;
+  if (pagamento === "Dinheiro") {
+    const precisa = document.querySelector('input[name="precisaTroco"]:checked').value === "sim";
+    if (precisa) {
+      const valor = parseFloat(document.getElementById("trocoValor").value);
+      if (!valor || valor < total) {
+        mostrarToast(`Informe um valor de troco maior ou igual a R$ ${formatarPreco(total)}`);
+        return;
+      }
+      trocoInfo = { precisa: true, valor, troco: +(valor - total).toFixed(2) };
+    } else {
+      trocoInfo = { precisa: false };
+    }
   }
 
-  msg += `\n💰 Subtotal: R$ ${formatarPreco(subtotal)}\n`;
-  msg += `🚚 Taxa: R$ ${formatarPreco(taxa)}\n`;
-  msg += `💵 *Total: R$ ${formatarPreco(total)}*`;
+  // Mensagem WhatsApp
+  let msg = `*${config.nomeLoja}*\n\n📦 *Pedido*\n\n`;
+  msg += `👤 Cliente: ${nome}\n📞 Telefone: ${telefone}\n📍 Endereço: ${endereco}\n\n`;
+  msg += `🛒 *Itens:*\n`;
+  carrinho.forEach(item => {
+    msg += `• ${item.nome} (R$ ${formatarPreco(item.preco)}) x${item.qtd} = R$ ${formatarPreco(item.preco * item.qtd)}\n`;
+  });
+  if (observacao) msg += `\n💬 *Observação:*\n${observacao}\n`;
 
-  // Salva o pedido no histórico (para o admin gerenciar)
+  msg += `\n💰 Subtotal: R$ ${formatarPreco(subtotal)}\n🚚 Taxa: R$ ${formatarPreco(taxa)}`;
+  if (cupomAplicado) {
+    msg += `\n🎟️ Cupom ${cupomAplicado.cupom.codigo} (-${cupomAplicado.cupom.percentual}%): − R$ ${formatarPreco(desconto)}`;
+  }
+  msg += `\n💵 *Total: R$ ${formatarPreco(total)}*\n`;
+
+  msg += `\n💳 *Pagamento:* ${pagamento}`;
+  if (trocoInfo) {
+    if (trocoInfo.precisa) {
+      msg += `\n💸 Troco para R$ ${formatarPreco(trocoInfo.valor)} (levar R$ ${formatarPreco(trocoInfo.troco)} de troco)`;
+    } else {
+      msg += `\n💸 Não precisa de troco`;
+    }
+  }
+
+  // Salva pedido
   const pedido = {
     id: Date.now(),
     cliente: { nome, telefone, endereco },
     itens: carrinho.map(i => ({ id: i.id, nome: i.nome, preco: i.preco, qtd: i.qtd })),
     observacao,
-    subtotal,
-    taxa,
-    total,
+    subtotal, taxa, desconto, total,
+    pagamento, troco: trocoInfo,
+    cupom: cupomAplicado ? { codigo: cupomAplicado.cupom.codigo, percentual: cupomAplicado.cupom.percentual } : null,
     status: "Recebido",
     dataHora: new Date().toISOString()
   };
   salvarPedido(pedido);
-
-  // Registra/atualiza cliente
   registrarCliente({ nome, telefone, endereco });
 
   // Abre WhatsApp
-  const url = `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`;
-  window.open(url, "_blank");
+  window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
 
-  // Limpa o carrinho e a observação após o envio
+  // Limpa
   carrinho = [];
+  cupomAplicado = null;
+  elCupomInput.value = "";
+  elCupomStatus.classList.add("escondido");
   salvarLS("carrinho", carrinho);
   elObservacao.value = "";
   limparLS("observacao");
@@ -443,5 +526,4 @@ function enviarPedidoWhatsapp(evento) {
   mostrarToast("✅ Pedido enviado! Confira o WhatsApp.");
 }
 
-// Inicia tudo
 iniciar();

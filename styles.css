@@ -959,86 +959,549 @@ body {
   flex-shrink: 0;
 }
 
-/* FUNDO LIMPO */
-.login-body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #FF5722, #FFC107);
-  font-family: Arial, sans-serif;
-}
-
-/* CARD CENTRAL */
-.login-box {
-  width: 320px;
-  padding: 30px;
-  border-radius: 15px;
-  background: white;
-  box-shadow: 0px 10px 30px rgba(0,0,0,0.25);
-  text-align: center;
-}
-
-/* TÍTULO DENTRO DO CARD */
-.login-title {
-  margin-bottom: 20px;
-  font-size: 22px;
-  color: #333;
-}
-
-/* INPUTS */
-.login-box input {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 8px;
-  background: #f2f2f2;
-  outline: none;
-}
-
-/* BOTÃO */
-.login-box button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #222;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.login-box button:hover {
-  background: #000;
-  transform: scale(1.03);
-}
-
-.btn-sair {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #e53935;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  z-index: 9999;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
-}
-
-.btn-sair:hover {
-  background: #c62828;
-  transform: scale(1.05);
-}
-
 /* Mobile */
 @media (max-width: 600px) {
   .abas { top: 60px; padding: 0 8px; }
   .aba { padding: 12px 12px; font-size: 0.85rem; }
   .lista-pedidos { grid-template-columns: 1fr; }
+}
+
+/* =========================================
+   TELA DE LOGIN
+========================================= */
+.tela-login {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--cor-principal), var(--cor-acento));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.card-login {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.logo-login {
+  font-size: 3rem;
+  margin-bottom: 6px;
+}
+
+.card-login h2 {
+  color: #333;
+  margin-bottom: 4px;
+  font-size: 1.4rem;
+}
+
+.subtitulo-login {
+  color: #888;
+  font-size: 0.95rem;
+  margin-bottom: 22px;
+}
+
+.card-login form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.card-login input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.15s;
+}
+
+.card-login input[type="password"]:focus {
+  outline: none;
+  border-color: var(--cor-principal);
+}
+
+.card-login label {
+  font-weight: bold;
+  color: #555;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-login button {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.erro-login {
+  background: #ffebee;
+  color: #c62828;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+
+.dica-login {
+  margin-top: 18px;
+  padding: 12px;
+  background: #fff8e1;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.dica-login code {
+  background: #ffe082;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* =========================================
+   BANNER DE AVISO (senha padrão)
+========================================= */
+.banner-aviso {
+  background: #fff3cd;
+  color: #856404;
+  padding: 10px 16px;
+  text-align: center;
+  border-bottom: 1px solid #ffeaa7;
+  font-size: 0.9rem;
+}
+
+.banner-aviso code {
+  background: #ffeaa7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.banner-aviso a {
+  color: #856404;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+
+/* =========================================
+   HEADER ADMIN — botão Sair
+========================================= */
+.header-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-sair {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.btn-sair:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* =========================================
+   DASHBOARD
+========================================= */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dash-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border-left: 5px solid #999;
+  transition: transform 0.15s;
+}
+
+.dash-card:hover {
+  transform: translateY(-2px);
+}
+
+.dash-card.dash-azul { border-left-color: #2196F3; }
+.dash-card.dash-verde { border-left-color: #4CAF50; }
+.dash-card.dash-laranja { border-left-color: #FF9800; }
+.dash-card.dash-roxo { border-left-color: #9C27B0; }
+
+.dash-icon {
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f7;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-label {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dash-valor {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin: 2px 0 0 0;
+}
+
+/* =========================================
+   Toggle de som
+========================================= */
+.toggle-som {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-som input {
+  cursor: pointer;
+}
+
+.filtro-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .dashboard-cards { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .dash-card { padding: 10px; gap: 8px; }
+  .dash-icon { width: 38px; height: 38px; font-size: 1.4rem; }
+  .dash-valor { font-size: 1.1rem; }
+  .header-acoes { gap: 4px; }
+  .btn-sair { padding: 6px 10px; font-size: 0.8rem; }
+}
+
+/* =========================================
+   NOVOS ESTILOS — pagamento, cupom, sobre, horários
+========================================= */
+
+/* Modal "Sobre" */
+.sobre-descricao {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 4px 0 18px;
+  line-height: 1.5;
+}
+.sobre-bloco {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+.sobre-bloco:last-child { border-bottom: none; }
+.sobre-bloco h3 {
+  font-size: 1rem;
+  color: var(--cor-principal);
+  margin-bottom: 8px;
+}
+.sobre-bloco p { margin: 4px 0; color: #444; }
+.sobre-bloco a { color: var(--cor-principal); text-decoration: none; font-weight: bold; }
+.sobre-redes { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.sobre-redes a {
+  background: #f5f5f7; padding: 6px 12px;
+  border-radius: 20px; font-size: 0.9rem;
+}
+
+/* Tabela de horários no modal */
+.tabela-horarios {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.tabela-horarios td {
+  padding: 6px 4px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.tabela-horarios tr.hoje {
+  background: #fff8e1;
+  font-weight: bold;
+}
+.tabela-horarios tr.hoje td { color: #f57c00; }
+.tabela-horarios .dia-fechado { color: #c62828; }
+
+/* Bloco do cupom */
+.bloco-cupom {
+  margin: 18px 0;
+  padding: 14px;
+  background: #fff8e1;
+  border-radius: 10px;
+  border: 1px dashed #ffb300;
+}
+.bloco-cupom h3 {
+  font-size: 0.95rem;
+  color: #e65100;
+  margin-bottom: 10px;
+}
+.cupom-linha {
+  display: flex; gap: 8px;
+}
+.cupom-linha input {
+  flex: 1; padding: 10px;
+  border: 2px solid #ffe082;
+  border-radius: 6px; font-size: 0.95rem;
+  text-transform: uppercase;
+}
+.cupom-linha input:focus { outline: none; border-color: var(--cor-principal); }
+.btn-cupom {
+  background: var(--cor-principal); color: white;
+  border: none; padding: 10px 18px; border-radius: 6px;
+  cursor: pointer; font-weight: bold;
+  white-space: nowrap;
+}
+.btn-cupom:hover { background: var(--cor-principal-escura); }
+.cupom-status {
+  margin-top: 8px;
+  font-size: 0.88rem; padding: 6px 10px; border-radius: 6px;
+}
+.cupom-status.cupom-ok {
+  background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7;
+}
+.cupom-status.cupom-erro {
+  background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;
+}
+.linha-desconto { color: #2e7d32; font-weight: bold; }
+
+/* Bloco de pagamento */
+.bloco-pagamento {
+  margin: 18px 0;
+  padding: 14px;
+  background: #f5f5f7;
+  border-radius: 10px;
+}
+.bloco-pagamento h3 {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+.pagamento-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.opcao-pag {
+  display: flex; align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 0.92rem;
+}
+.opcao-pag:hover { border-color: var(--cor-principal); }
+.opcao-pag input { margin: 0; cursor: pointer; }
+.opcao-pag input:checked ~ span { color: var(--cor-principal); font-weight: bold; }
+.opcao-pag:has(input:checked) {
+  border-color: var(--cor-principal);
+  background: rgba(var(--cor-principal-rgb), 0.05);
+}
+.bloco-troco {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #ccc;
+}
+.bloco-troco p { font-weight: bold; margin-bottom: 6px; font-size: 0.92rem; }
+.troco-opcoes {
+  display: flex; gap: 16px;
+}
+.troco-opcoes label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.92rem; cursor: pointer;
+}
+.campo-troco-valor {
+  margin-top: 10px;
+}
+.campo-troco-valor input {
+  width: 100%; padding: 10px;
+  border: 2px solid #ddd; border-radius: 6px;
+  font-size: 0.95rem;
+}
+.campo-troco-valor input:focus { outline: none; border-color: var(--cor-principal); }
+.campo-troco-valor label { display: block; font-size: 0.88rem; color: #666; margin-bottom: 4px; }
+
+/* Header com 2 botões */
+.header-acoes {
+  display: flex; gap: 8px; align-items: center;
+}
+
+/* =========================================
+   ADMIN — busca, ativos, cupons, horários
+========================================= */
+.input-busca, .input-busca-full {
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+.input-busca { min-width: 200px; }
+.input-busca-full {
+  display: block; width: 100%;
+  margin-bottom: 14px;
+}
+.input-busca:focus, .input-busca-full:focus {
+  outline: none; border-color: var(--cor-principal);
+}
+
+/* Toggle ativo do produto */
+.toggle-ativo {
+  display: flex !important; align-items: center;
+  gap: 8px; cursor: pointer; user-select: none;
+  flex-direction: row !important;
+  background: #f5f5f7; padding: 8px 12px;
+  border-radius: 8px; font-weight: bold;
+  font-size: 0.9rem;
+}
+.toggle-ativo input { margin: 0; }
+
+/* Linhas inativas (produto/cupom oculto) */
+.linha-admin.inativo { opacity: 0.55; }
+.linha-admin.inativo img { filter: grayscale(80%); }
+
+/* Tags */
+.tag-on {
+  background: #e8f5e9; color: #2e7d32;
+  font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;
+  margin-left: 8px; font-weight: bold;
+}
+.tag-off {
+  background: #ffebee; color: #c62828;
+  font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;
+  margin-left: 8px; font-weight: bold;
+}
+
+/* Sub-título dentro do form */
+.sub-titulo {
+  font-size: 1rem;
+  color: var(--cor-principal);
+  margin: 18px 0 8px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+/* Horários por dia */
+.horarios-config {
+  display: flex; flex-direction: column; gap: 8px;
+  margin: 8px 0;
+}
+.horario-linha {
+  display: grid;
+  grid-template-columns: 130px 100px 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background: #f9f9fa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.horario-dia { font-weight: bold; }
+.horario-fechado {
+  display: flex !important; align-items: center;
+  gap: 4px; flex-direction: row !important;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.horario-fechado input { margin: 0; }
+.horario-linha input[type="time"] {
+  padding: 6px; border: 1px solid #ccc; border-radius: 4px;
+  font-size: 0.88rem;
+}
+.horario-linha input[type="time"]:disabled {
+  background: #f0f0f0; color: #999;
+}
+
+/* Cupom code estilizado */
+.cupom-codigo {
+  background: #fff3cd; color: #856404;
+  padding: 3px 8px; border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+/* Pedidos: linha de pagamento e badges */
+.pedido-pag {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 4px;
+}
+.badge-info {
+  display: inline-block;
+  background: #e3f2fd; color: #1565c0;
+  font-size: 0.72rem;
+  padding: 2px 8px; border-radius: 10px;
+  margin-left: 6px;
+  font-weight: bold;
+}
+.troco-info {
+  background: #fff3cd;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #ffb300;
+}
+.cupom-info {
+  background: #e8f5e9;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #4caf50;
+  margin-top: 6px;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .pagamento-opcoes { grid-template-columns: 1fr 1fr; }
+  .horario-linha {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .horario-linha > span { display: none; }
+  .horario-dia { grid-column: 1 / -1; }
+  .filtro-status { flex-direction: column; align-items: stretch; }
+  .input-busca { min-width: 0; width: 100%; }
 }
