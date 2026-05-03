@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pizzaria Modão - Admin</title>
+  <title>Pizzaria D'Casa - Admin</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="admin-body">
 
-  <!-- TELA DE LOGIN -->
   <div id="telaLogin" class="tela-login">
     <div class="card-login">
       <div class="logo-login">🔒</div>
       <h2>Painel Administrativo</h2>
-      <p class="subtitulo-login" id="subtitLogin">Pizzaria Modão</p>
+      <p class="subtitulo-login" id="subtitLogin">Pizzaria D'Casa</p>
       <form id="formLogin">
         <label>Senha de acesso
           <input type="password" id="loginSenha" required autofocus autocomplete="current-password" />
@@ -28,233 +27,303 @@
     </div>
   </div>
 
-  <!-- PAINEL PRINCIPAL -->
   <div id="painelAdmin" class="escondido">
+    <div class="admin-layout">
 
-    <header class="header">
-      <div class="header-inner">
-        <h1 class="logo">⚙️ <span id="adminLogo">Admin</span></h1>
-        <div class="header-acoes">
-          <a href="index.html" class="btn-cart">← Cardápio</a>
-          <button id="btnSair" class="btn-sair" title="Sair do painel">🚪 Sair</button>
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-logo-icon">🍕</span>
+          <div class="sidebar-header-texto">
+            <span class="sidebar-titulo" id="sidebarNome">D'Casa</span>
+            <span class="sidebar-subtitulo">Admin</span>
+          </div>
         </div>
-      </div>
-    </header>
 
-    <div id="bannerSenhaPadrao" class="banner-aviso escondido">
-      ⚠️ Você ainda está usando a senha padrão (<code>admin</code>).
-      <a href="#" id="linkTrocarSenha">Mude agora nas Configurações</a>
+        <nav class="sidebar-nav">
+          <button class="aba ativa" data-aba="pedidos">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-label">Dashboard</span>
+            <span id="badgePedidos" class="badge sidebar-badge"></span>
+          </button>
+          <button class="aba" data-aba="produtos">
+            <span class="sidebar-icon">🍕</span>
+            <span class="sidebar-label">Produtos</span>
+          </button>
+          <button class="aba" data-aba="categorias">
+            <span class="sidebar-icon">🏷️</span>
+            <span class="sidebar-label">Categorias</span>
+          </button>
+          <button class="aba" data-aba="cupons">
+            <span class="sidebar-icon">🎟️</span>
+            <span class="sidebar-label">Cupons</span>
+          </button>
+          <button class="aba" data-aba="clientes">
+            <span class="sidebar-icon">👤</span>
+            <span class="sidebar-label">Clientes</span>
+          </button>
+          <button class="aba" data-aba="funcionarios">
+            <span class="sidebar-icon">👷</span>
+            <span class="sidebar-label">Funcionários</span>
+          </button>
+          <button class="aba" data-aba="config">
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-label">Configurações</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="/" class="sidebar-link-cardapio">
+            <span>←</span> Ver cardápio
+          </a>
+        </div>
+      </aside>
+
+      <div class="admin-main">
+
+        <header class="admin-topbar">
+          <div class="topbar-esq">
+            <button class="sidebar-toggle" id="sidebarToggle" title="Menu">☰</button>
+            <h1 class="topbar-titulo" id="topbarTitulo">Dashboard</h1>
+          </div>
+          <div class="topbar-dir">
+            <span class="topbar-greeting" id="topbarGreeting">Olá 👋</span>
+            <button id="btnSair" class="btn-topbar-sair">🚪 Sair</button>
+          </div>
+        </header>
+
+        <div id="bannerSenhaPadrao" class="banner-aviso escondido">
+          ⚠️ Você ainda está usando a senha padrão (<code>admin</code>).
+          <a href="#" id="linkTrocarSenha">Mude agora nas Configurações</a>
+        </div>
+
+        <main class="admin-content">
+
+          <section id="painelPedidos" class="painel">
+            <div class="dashboard-cards">
+              <div class="dash-card dash-azul">
+                <div class="dash-icon">📦</div>
+                <div><p class="dash-label">Pedidos hoje</p><p class="dash-valor" id="dashPedidosHoje">0</p></div>
+              </div>
+              <div class="dash-card dash-verde">
+                <div class="dash-icon">💰</div>
+                <div><p class="dash-label">Vendas hoje</p><p class="dash-valor" id="dashVendasHoje">R$ 0,00</p></div>
+              </div>
+              <div class="dash-card dash-laranja">
+                <div class="dash-icon">📊</div>
+                <div><p class="dash-label">Ticket médio</p><p class="dash-valor" id="dashTicket">R$ 0,00</p></div>
+              </div>
+              <div class="dash-card dash-roxo">
+                <div class="dash-icon">🔥</div>
+                <div><p class="dash-label">Pendentes</p><p class="dash-valor" id="dashPendentes">0</p></div>
+              </div>
+            </div>
+
+            <div class="dash-bottom-row">
+              <div class="card-form dash-chart-wrap">
+                <h3 class="dash-sec-titulo">📈 Pedidos por hora (hoje)</h3>
+                <div id="dashChart" class="dash-chart"></div>
+              </div>
+              <div class="card-form dash-ativ-wrap">
+                <h3 class="dash-sec-titulo">🕐 Atividade recente</h3>
+                <div id="dashAtividade" class="dash-atividade"></div>
+              </div>
+            </div>
+
+            <div class="painel-cabecalho">
+              <h2>Pedidos</h2>
+              <div class="filtro-status">
+                <label class="toggle-som">
+                  <input type="checkbox" id="toggleSom" checked />
+                  🔔 Som de pedido novo
+                </label>
+                <input type="search" id="buscaPedido" placeholder="🔍 Buscar por nome, telefone ou #ID..." class="input-busca" />
+                <select id="filtroStatus">
+                  <option value="">Todos os status</option>
+                  <option value="Recebido">Recebido</option>
+                  <option value="Em preparo">Em preparo</option>
+                  <option value="Saiu para entrega">Saiu para entrega</option>
+                  <option value="Finalizado">Finalizado</option>
+                </select>
+              </div>
+            </div>
+            <div id="listaPedidos" class="lista-pedidos"></div>
+          </section>
+
+          <section id="painelProdutos" class="painel escondido">
+            <div class="card-form">
+              <h2 id="tituloForm">Adicionar Novo Produto</h2>
+              <form id="formProduto" class="form-produto">
+                <input type="hidden" id="produtoId" />
+                <label>Nome <input type="text" id="prodNome" required /></label>
+                <label>Descrição <textarea id="prodDescricao" rows="2" required></textarea></label>
+                <div class="linha-dupla">
+                  <label>Preço (R$) <input type="number" id="prodPreco" min="0" step="0.01" required /></label>
+                  <label>Categoria <select id="prodCategoria" required></select></label>
+                </div>
+                <label>Destaque / Badge
+                  <select id="prodBadge">
+                    <option value="">Nenhum</option>
+                    <option value="🔥 Mais vendido">🔥 Mais vendido</option>
+                    <option value="⭐ Recomendado">⭐ Recomendado</option>
+                    <option value="🆕 Novo">🆕 Novo</option>
+                    <option value="🏷️ Promoção">🏷️ Promoção</option>
+                  </select>
+                </label>
+                <div class="campo-imagem-admin">
+                  <span class="label-campo">Imagem do produto</span>
+                  <div id="previewImagem" class="preview-imagem-admin escondido">
+                    <img id="previewImg" src="" alt="Preview" />
+                    <button type="button" id="btnRemoverImagem" class="btn-remover-preview" title="Remover imagem">✕ Remover</button>
+                  </div>
+                  <div class="imagem-opcoes-admin">
+                    <label class="btn-upload-arquivo" for="prodImagemArquivo">
+                      📁 Enviar arquivo
+                      <input type="file" id="prodImagemArquivo" accept="image/*" style="display:none" />
+                    </label>
+                    <span class="ou-sep">ou</span>
+                    <input type="url" id="prodImagem" placeholder="Cole o link da imagem (https://...)" />
+                  </div>
+                  <small class="dica-upload">💡 Imagens enviadas são redimensionadas automaticamente para economizar espaço.</small>
+                </div>
+                <label class="toggle-ativo">
+                  <input type="checkbox" id="prodAtivo" checked />
+                  Produto ativo (visível no cardápio)
+                </label>
+                <div class="acoes-form">
+                  <button type="submit" class="btn-primario">💾 Salvar produto</button>
+                  <button type="button" id="btnCancelar" class="btn-secundario escondido">Cancelar</button>
+                </div>
+              </form>
+            </div>
+
+            <h2 class="sec-titulo">Produtos cadastrados</h2>
+            <input type="search" id="buscaProduto" placeholder="🔍 Buscar produto..." class="input-busca-full" />
+            <div id="listaAdmin" class="lista-admin"></div>
+          </section>
+
+          <section id="painelCategorias" class="painel escondido">
+            <div class="card-form">
+              <h2>Adicionar Categoria</h2>
+              <form id="formCategoria" class="form-produto">
+                <label>Nome da categoria
+                  <input type="text" id="catNome" required placeholder="Ex: Promoções" />
+                </label>
+                <button type="submit" class="btn-primario">Adicionar</button>
+              </form>
+            </div>
+            <h2 class="sec-titulo">Categorias cadastradas</h2>
+            <p class="dica">Use ↑ ↓ para reordenar (afeta a ordem no cardápio do cliente). Ao remover, os produtos vão para "Outros".</p>
+            <div id="listaCategorias" class="lista-admin"></div>
+          </section>
+
+          <section id="painelCupons" class="painel escondido">
+            <div class="card-form">
+              <h2>Adicionar cupom de desconto</h2>
+              <form id="formCupom" class="form-produto">
+                <div class="linha-dupla">
+                  <label>Código (sem espaços)
+                    <input type="text" id="cupCodigo" required placeholder="EX: PIZZA10" maxlength="20" />
+                  </label>
+                  <label>Desconto (%)
+                    <input type="number" id="cupPercentual" required min="1" max="90" />
+                  </label>
+                </div>
+                <label>Valor mínimo do pedido (R$ — opcional)
+                  <input type="number" id="cupMinimo" min="0" step="0.01" placeholder="Deixe 0 para sem mínimo" />
+                </label>
+                <button type="submit" class="btn-primario">Adicionar cupom</button>
+              </form>
+            </div>
+            <h2 class="sec-titulo">Cupons cadastrados</h2>
+            <p class="dica">Cupons inativos não funcionam para o cliente. Ative/desative conforme sua promoção.</p>
+            <div id="listaCupons" class="lista-admin"></div>
+          </section>
+
+          <section id="painelClientes" class="painel escondido">
+            <h2>Clientes</h2>
+            <p class="dica">Clientes são registrados automaticamente quando fazem um pedido.</p>
+            <input type="search" id="buscaCliente" placeholder="🔍 Buscar por nome ou telefone..." class="input-busca-full" />
+            <div id="listaClientes" class="lista-admin"></div>
+          </section>
+
+          <section id="painelFuncionarios" class="painel escondido">
+            <div class="card-form">
+              <h2>Adicionar Funcionário</h2>
+              <form id="formFuncionario" class="form-produto">
+                <div class="linha-dupla">
+                  <label>Nome <input type="text" id="funcNome" required /></label>
+                  <label>Função
+                    <select id="funcFuncao" required>
+                      <option value="Atendente">Atendente</option>
+                      <option value="Pizzaiolo">Pizzaiolo</option>
+                      <option value="Entregador">Entregador</option>
+                      <option value="Caixa">Caixa</option>
+                      <option value="Gerente">Gerente</option>
+                    </select>
+                  </label>
+                </div>
+                <label>Telefone (opcional) <input type="tel" id="funcTelefone" placeholder="(11) 99999-9999" /></label>
+                <button type="submit" class="btn-primario">Adicionar</button>
+              </form>
+            </div>
+            <h2 class="sec-titulo">Equipe cadastrada</h2>
+            <div id="listaFuncionarios" class="lista-admin"></div>
+          </section>
+
+          <section id="painelConfig" class="painel escondido">
+            <div class="card-form">
+              <h2>📍 Identidade da loja</h2>
+              <form id="formConfig" class="form-produto">
+                <label>Nome da loja <input type="text" id="cfgNome" required /></label>
+                <label>Descrição curta (aparece em "Sobre")
+                  <textarea id="cfgDescricao" rows="2" placeholder="Ex: A melhor pizza artesanal da cidade"></textarea>
+                </label>
+                <label>Endereço completo <input type="text" id="cfgEndereco" placeholder="Rua, número, bairro, cidade" /></label>
+
+                <h3 class="sub-titulo">Contato e redes</h3>
+                <div class="linha-dupla">
+                  <label>WhatsApp (DDI + DDD + número) <input type="text" id="cfgWhatsapp" required /></label>
+                  <label>Instagram <input type="text" id="cfgInstagram" placeholder="@perfil" /></label>
+                </div>
+                <label>Facebook <input type="text" id="cfgFacebook" placeholder="usuario.do.facebook" /></label>
+
+                <h3 class="sub-titulo">Pedidos</h3>
+                <div class="linha-dupla">
+                  <label>Taxa de entrega (R$) <input type="number" id="cfgTaxa" min="0" step="0.01" required /></label>
+                  <label>Pedido mínimo (R$) <input type="number" id="cfgMinimo" min="0" step="0.01" required /></label>
+                </div>
+
+                <h3 class="sub-titulo">Aparência</h3>
+                <label>Cor principal do site
+                  <input type="color" id="cfgCor" required style="height:46px; padding:4px;" />
+                </label>
+
+                <h3 class="sub-titulo">🕒 Horário de funcionamento (por dia)</h3>
+                <div id="horariosLista" class="horarios-config"></div>
+
+                <button type="submit" class="btn-primario">Salvar configurações</button>
+              </form>
+            </div>
+
+            <div class="card-form" id="cardTrocarSenha">
+              <h2>🔑 Alterar senha do painel</h2>
+              <p class="dica">Sua senha atual será substituída. Use uma senha forte que só você sabe.</p>
+              <form id="formSenha" class="form-produto">
+                <label>Senha atual <input type="password" id="senhaAtual" required autocomplete="current-password" /></label>
+                <label>Nova senha <input type="password" id="senhaNova" required minlength="4" autocomplete="new-password" /></label>
+                <label>Confirmar nova senha <input type="password" id="senhaConfirma" required minlength="4" autocomplete="new-password" /></label>
+                <p id="erroSenha" class="erro-login escondido"></p>
+                <button type="submit" class="btn-primario">Alterar senha</button>
+              </form>
+            </div>
+          </section>
+
+        </main>
+      </div>
     </div>
 
-    <nav class="abas">
-      <button class="aba ativa" data-aba="pedidos">📦 Pedidos <span id="badgePedidos" class="badge"></span></button>
-      <button class="aba" data-aba="produtos">🍕 Produtos</button>
-      <button class="aba" data-aba="categorias">🏷️ Categorias</button>
-      <button class="aba" data-aba="cupons">🎟️ Cupons</button>
-      <button class="aba" data-aba="clientes">👤 Clientes</button>
-      <button class="aba" data-aba="funcionarios">👷 Funcionários</button>
-      <button class="aba" data-aba="config">⚙️ Configurações</button>
-    </nav>
-
-    <main class="container admin-container">
-
-      <!-- 📦 PEDIDOS -->
-      <section id="painelPedidos" class="painel">
-        <div class="dashboard-cards">
-          <div class="dash-card dash-azul">
-            <div class="dash-icon">📦</div>
-            <div><p class="dash-label">Pedidos hoje</p><p class="dash-valor" id="dashPedidosHoje">0</p></div>
-          </div>
-          <div class="dash-card dash-verde">
-            <div class="dash-icon">💰</div>
-            <div><p class="dash-label">Vendas hoje</p><p class="dash-valor" id="dashVendasHoje">R$ 0,00</p></div>
-          </div>
-          <div class="dash-card dash-laranja">
-            <div class="dash-icon">📊</div>
-            <div><p class="dash-label">Ticket médio</p><p class="dash-valor" id="dashTicket">R$ 0,00</p></div>
-          </div>
-          <div class="dash-card dash-roxo">
-            <div class="dash-icon">🔥</div>
-            <div><p class="dash-label">Pendentes</p><p class="dash-valor" id="dashPendentes">0</p></div>
-          </div>
-        </div>
-
-        <div class="painel-cabecalho">
-          <h2>Pedidos</h2>
-          <div class="filtro-status">
-            <label class="toggle-som">
-              <input type="checkbox" id="toggleSom" checked />
-              🔔 Som de pedido novo
-            </label>
-            <input type="search" id="buscaPedido" placeholder="🔍 Buscar por nome, telefone ou #ID..." class="input-busca" />
-            <select id="filtroStatus">
-              <option value="">Todos os status</option>
-              <option value="Recebido">Recebido</option>
-              <option value="Em preparo">Em preparo</option>
-              <option value="Saiu para entrega">Saiu para entrega</option>
-              <option value="Finalizado">Finalizado</option>
-            </select>
-          </div>
-        </div>
-        <div id="listaPedidos" class="lista-pedidos"></div>
-      </section>
-
-      <!-- 🍕 PRODUTOS -->
-      <section id="painelProdutos" class="painel escondido">
-        <div class="card-form">
-          <h2 id="tituloForm">Adicionar Novo Produto</h2>
-          <form id="formProduto" class="form-produto">
-            <input type="hidden" id="produtoId" />
-            <label>Nome <input type="text" id="prodNome" required /></label>
-            <label>Descrição <textarea id="prodDescricao" rows="2" required></textarea></label>
-            <div class="linha-dupla">
-              <label>Preço (R$) <input type="number" id="prodPreco" min="0" step="0.01" required /></label>
-              <label>Categoria <select id="prodCategoria" required></select></label>
-            </div>
-            <label>Imagem (URL) <input type="url" id="prodImagem" placeholder="https://..." required /></label>
-            <label class="toggle-ativo">
-              <input type="checkbox" id="prodAtivo" checked />
-              Produto ativo (visível no cardápio)
-            </label>
-            <div class="acoes-form">
-              <button type="submit" class="btn-primario">Salvar</button>
-              <button type="button" id="btnCancelar" class="btn-secundario escondido">Cancelar</button>
-            </div>
-          </form>
-        </div>
-
-        <h2 class="sec-titulo">Produtos cadastrados</h2>
-        <input type="search" id="buscaProduto" placeholder="🔍 Buscar produto..." class="input-busca-full" />
-        <div id="listaAdmin" class="lista-admin"></div>
-      </section>
-
-      <!-- 🏷️ CATEGORIAS -->
-      <section id="painelCategorias" class="painel escondido">
-        <div class="card-form">
-          <h2>Adicionar Categoria</h2>
-          <form id="formCategoria" class="form-produto">
-            <label>Nome da categoria
-              <input type="text" id="catNome" required placeholder="Ex: Promoções" />
-            </label>
-            <button type="submit" class="btn-primario">Adicionar</button>
-          </form>
-        </div>
-        <h2 class="sec-titulo">Categorias cadastradas</h2>
-        <p class="dica">Use ↑ ↓ para reordenar (afeta a ordem no cardápio do cliente). Ao remover, os produtos vão para "Outros".</p>
-        <div id="listaCategorias" class="lista-admin"></div>
-      </section>
-
-      <!-- 🎟️ CUPONS -->
-      <section id="painelCupons" class="painel escondido">
-        <div class="card-form">
-          <h2>Adicionar cupom de desconto</h2>
-          <form id="formCupom" class="form-produto">
-            <div class="linha-dupla">
-              <label>Código (sem espaços)
-                <input type="text" id="cupCodigo" required placeholder="EX: PIZZA10" maxlength="20" />
-              </label>
-              <label>Desconto (%)
-                <input type="number" id="cupPercentual" required min="1" max="90" />
-              </label>
-            </div>
-            <label>Valor mínimo do pedido (R$ — opcional)
-              <input type="number" id="cupMinimo" min="0" step="0.01" placeholder="Deixe 0 para sem mínimo" />
-            </label>
-            <button type="submit" class="btn-primario">Adicionar cupom</button>
-          </form>
-        </div>
-        <h2 class="sec-titulo">Cupons cadastrados</h2>
-        <p class="dica">Cupons inativos não funcionam para o cliente. Ative/desative conforme sua promoção.</p>
-        <div id="listaCupons" class="lista-admin"></div>
-      </section>
-
-      <!-- 👤 CLIENTES -->
-      <section id="painelClientes" class="painel escondido">
-        <h2>Clientes</h2>
-        <p class="dica">Clientes são registrados automaticamente quando fazem um pedido.</p>
-        <input type="search" id="buscaCliente" placeholder="🔍 Buscar por nome ou telefone..." class="input-busca-full" />
-        <div id="listaClientes" class="lista-admin"></div>
-      </section>
-
-      <!-- 👷 FUNCIONÁRIOS -->
-      <section id="painelFuncionarios" class="painel escondido">
-        <div class="card-form">
-          <h2>Adicionar Funcionário</h2>
-          <form id="formFuncionario" class="form-produto">
-            <div class="linha-dupla">
-              <label>Nome <input type="text" id="funcNome" required /></label>
-              <label>Função
-                <select id="funcFuncao" required>
-                  <option value="Atendente">Atendente</option>
-                  <option value="Pizzaiolo">Pizzaiolo</option>
-                  <option value="Entregador">Entregador</option>
-                  <option value="Caixa">Caixa</option>
-                  <option value="Gerente">Gerente</option>
-                </select>
-              </label>
-            </div>
-            <label>Telefone (opcional) <input type="tel" id="funcTelefone" placeholder="(11) 99999-9999" /></label>
-            <button type="submit" class="btn-primario">Adicionar</button>
-          </form>
-        </div>
-        <h2 class="sec-titulo">Equipe cadastrada</h2>
-        <div id="listaFuncionarios" class="lista-admin"></div>
-      </section>
-
-      <!-- ⚙️ CONFIGURAÇÕES -->
-      <section id="painelConfig" class="painel escondido">
-
-        <!-- IDENTIDADE -->
-        <div class="card-form">
-          <h2>📍 Identidade da loja</h2>
-          <form id="formConfig" class="form-produto">
-            <label>Nome da loja <input type="text" id="cfgNome" required /></label>
-            <label>Descrição curta (aparece em "Sobre")
-              <textarea id="cfgDescricao" rows="2" placeholder="Ex: A melhor pizza artesanal da cidade"></textarea>
-            </label>
-            <label>Endereço completo <input type="text" id="cfgEndereco" placeholder="Rua, número, bairro, cidade" /></label>
-
-            <h3 class="sub-titulo">Contato e redes</h3>
-            <div class="linha-dupla">
-              <label>WhatsApp (DDI + DDD + número) <input type="text" id="cfgWhatsapp" required /></label>
-              <label>Instagram <input type="text" id="cfgInstagram" placeholder="@perfil" /></label>
-            </div>
-            <label>Facebook <input type="text" id="cfgFacebook" placeholder="usuario.do.facebook" /></label>
-
-            <h3 class="sub-titulo">Pedidos</h3>
-            <div class="linha-dupla">
-              <label>Taxa de entrega (R$) <input type="number" id="cfgTaxa" min="0" step="0.01" required /></label>
-              <label>Pedido mínimo (R$) <input type="number" id="cfgMinimo" min="0" step="0.01" required /></label>
-            </div>
-
-            <h3 class="sub-titulo">Aparência</h3>
-            <label>Cor principal do site
-              <input type="color" id="cfgCor" required style="height:46px; padding:4px;" />
-            </label>
-
-            <h3 class="sub-titulo">🕒 Horário de funcionamento (por dia)</h3>
-            <div id="horariosLista" class="horarios-config"></div>
-
-            <button type="submit" class="btn-primario">Salvar configurações</button>
-          </form>
-        </div>
-
-        <!-- TROCAR SENHA -->
-        <div class="card-form" id="cardTrocarSenha">
-          <h2>🔑 Alterar senha do painel</h2>
-          <p class="dica">Sua senha atual será substituída. Use uma senha forte que só você sabe.</p>
-          <form id="formSenha" class="form-produto">
-            <label>Senha atual <input type="password" id="senhaAtual" required autocomplete="current-password" /></label>
-            <label>Nova senha <input type="password" id="senhaNova" required minlength="4" autocomplete="new-password" /></label>
-            <label>Confirmar nova senha <input type="password" id="senhaConfirma" required minlength="4" autocomplete="new-password" /></label>
-            <p id="erroSenha" class="erro-login escondido"></p>
-            <button type="submit" class="btn-primario">Alterar senha</button>
-          </form>
-        </div>
-      </section>
-    </main>
-
-    <!-- Modal de detalhe do pedido -->
     <div id="modalPedido" class="modal escondido">
       <div class="modal-conteudo">
         <button class="fechar" data-fechar="modalPedido">×</button>

@@ -3,18 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pizzaria Modão - Cardápio</title>
+  <title>Pizzaria D'Casa - Cardápio</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- =========================
-       CABEÇALHO
-  ========================== -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-emoji">🍕</div>
+      <h2 class="loading-nome" id="loadingNome">Carregando...</h2>
+      <div class="loading-bar"><div class="loading-progress"></div></div>
+      <p class="loading-sub">Preparando seu cardápio...</p>
+    </div>
+  </div>
+
   <header class="header">
     <div class="header-inner">
       <div class="logo-wrap">
-        <h1 class="logo">🍕 <span id="nomeLoja">Pizzaria Modão</span></h1>
+        <h1 class="logo">🍕 <span id="nomeLoja">Pizzaria D'Casa</span></h1>
         <span id="statusLoja" class="status-loja">Carregando...</span>
       </div>
       <div class="header-acoes">
@@ -26,38 +32,68 @@
     </div>
   </header>
 
-  <!-- =========================
-       BUSCA
-  ========================== -->
-  <div class="busca-wrap">
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <div class="hero-texto">
+        <h2 class="hero-titulo" id="heroNomeLoja">Pizzaria D'Casa</h2>
+        <p class="hero-tagline">Peça rápido pelo WhatsApp 🍕</p>
+        <p class="hero-descricao" id="heroDescricao">Pizzas artesanais feitas com ingredientes frescos e muito amor.</p>
+        <button class="btn-hero" id="btnHeroCardapio">Ver cardápio completo ↓</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="urgencia-banner" id="urgenciaBanner">
+    🚀 Pedidos rápidos hoje — faça o seu agora!
+  </div>
+
+  <div class="busca-wrap" id="topCardapio">
     <input type="search" id="campoBusca" placeholder="🔍 Buscar produto..." />
   </div>
 
-  <!-- =========================
-       MENU DE CATEGORIAS
-  ========================== -->
   <nav class="categorias" id="categorias"></nav>
 
-  <!-- =========================
-       LISTA DE PRODUTOS
-  ========================== -->
+  <section id="secDestaques" class="container sec-destaques escondido"></section>
+
+  <section class="sec-beneficios">
+    <div class="beneficios-inner">
+      <h2 class="beneficios-titulo">Por que pedir aqui? 🍕</h2>
+      <div class="beneficios-grid">
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">⚡</span>
+          <h3>Rápido</h3>
+          <p>Pedido feito em segundos direto pelo WhatsApp</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">✅</span>
+          <h3>Sem erros</h3>
+          <p>Tudo confirmado por mensagem, sem enganos</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">💬</span>
+          <h3>Direto</h3>
+          <p>Fale com a gente na hora, tire dúvidas</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">❤️</span>
+          <h3>Com carinho</h3>
+          <p>Cada pizza feita com cuidado especial</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <main class="container">
     <section id="listaProdutos" class="grid-produtos"></section>
   </main>
 
-  <!-- =========================
-       BOTÃO FLUTUANTE
-  ========================== -->
   <button id="btnFlutuante" class="btn-flutuante" title="Ver carrinho">
     🛒 <span id="qtdFlutuante">0</span>
   </button>
 
-  <!-- Toast -->
   <div id="toast" class="toast"></div>
 
-  <!-- =========================
-       MODAL "SOBRE"
-  ========================== -->
   <div id="modalSobre" class="modal escondido">
     <div class="modal-conteudo">
       <button class="fechar" data-fechar="modalSobre">×</button>
@@ -82,9 +118,6 @@
     </div>
   </div>
 
-  <!-- =========================
-       MODAL DE DETALHE DO PRODUTO
-  ========================== -->
   <div id="modalProduto" class="modal escondido">
     <div class="modal-conteudo modal-produto">
       <button class="fechar" data-fechar="modalProduto">×</button>
@@ -99,9 +132,6 @@
     </div>
   </div>
 
-  <!-- =========================
-       MODAL DO CARRINHO
-  ========================== -->
   <div id="modalCarrinho" class="modal escondido">
     <div class="modal-conteudo">
       <button class="fechar" data-fechar="modalCarrinho">×</button>
@@ -109,13 +139,11 @@
 
       <div id="itensCarrinho" class="itens-carrinho"></div>
 
-      <!-- Observação -->
       <label class="campo-observacao">
         Observações do pedido (ex: sem cebola, borda recheada)
         <textarea id="observacao" rows="2" placeholder="Sua observação..."></textarea>
       </label>
 
-      <!-- CUPOM DE DESCONTO -->
       <div class="bloco-cupom">
         <h3>🎟️ Cupom de desconto</h3>
         <div class="cupom-linha">
@@ -125,9 +153,8 @@
         <p id="cupomStatus" class="cupom-status escondido"></p>
       </div>
 
-      <!-- FORMA DE PAGAMENTO -->
       <div class="bloco-pagamento">
-        <h3>💳 Forma de pagamento</h3>
+        <h3>💳 Formas de Pagamento</h3>
         <div class="pagamento-opcoes">
           <label class="opcao-pag"><input type="radio" name="pagamento" value="PIX" checked /> <span>🔷 PIX</span></label>
           <label class="opcao-pag"><input type="radio" name="pagamento" value="Cartão de Crédito" /> <span>💳 Crédito</span></label>
@@ -135,7 +162,6 @@
           <label class="opcao-pag"><input type="radio" name="pagamento" value="Dinheiro" /> <span>💵 Dinheiro</span></label>
         </div>
 
-        <!-- Troco (aparece só se pagamento = Dinheiro) -->
         <div id="blocoTroco" class="bloco-troco escondido">
           <p>Precisa de troco?</p>
           <div class="troco-opcoes">
@@ -150,7 +176,6 @@
         </div>
       </div>
 
-      <!-- Totais -->
       <div class="totais">
         <p>Subtotal: <strong>R$ <span id="subtotal">0,00</span></strong></p>
         <p>Taxa de entrega: <strong>R$ <span id="taxa">0,00</span></strong></p>
@@ -161,7 +186,6 @@
         <p id="avisoMinimo" class="aviso-minimo escondido"></p>
       </div>
 
-      <!-- Formulário do cliente -->
       <form id="formPedido" class="form-pedido">
         <h3>Seus dados</h3>
         <input type="text" id="nome" placeholder="Seu nome" required />
@@ -175,9 +199,18 @@
     </div>
   </div>
 
-  <!-- Rodapé -->
+  <div id="barraInferior" class="barra-inferior escondido">
+    <div class="barra-info">
+      <span id="barraQtdTexto" class="barra-qtd-texto">0 itens</span>
+      <span class="barra-total-texto">R$ <strong id="barraTotal">0,00</strong></span>
+    </div>
+    <button id="barraBtnFinalizar" class="barra-btn-wpp">
+      📱 Finalizar no WhatsApp
+    </button>
+  </div>
+
   <footer class="footer">
-    <p>© <span id="nomeLojaRodape">Pizzaria Modão</span> - <a href="admin.html">Área Administrativa</a></p>
+    <p>© <span id="nomeLojaRodape">Pizzaria D'Casa</span> — Desenvolvido por RGR Systems</p>
   </footer>
 
   <script src="data.js"></script>

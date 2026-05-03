@@ -16,10 +16,8 @@ let buscaCliente = "";
 
 let idsConhecidos = new Set(pedidos.map(p => p.id));
 let audioCtx = null;
+let imagemBase64 = null;
 
-/* -----------------------------------------------------
-   Início → tela de login
------------------------------------------------------ */
 async function iniciar() {
   await inicializarSenhaAdmin();
 
@@ -52,13 +50,35 @@ async function mostrarPainel() {
   document.getElementById("painelAdmin").classList.remove("escondido");
 
   aplicarCor(config.cor);
-  document.getElementById("adminLogo").textContent = "Admin - " + config.nomeLoja;
+  const elSidebarNome = document.getElementById("sidebarNome");
+  if (elSidebarNome) elSidebarNome.textContent = config.nomeLoja;
+
+  let adminNome = localStorage.getItem("adminNome");
+  if (!adminNome) {
+    adminNome = prompt("Como quer ser chamado aqui no painel? (ex: Rogério, Maria)") || "Admin";
+    localStorage.setItem("adminNome", adminNome);
+  }
+  const elGreeting = document.getElementById("topbarGreeting");
+  if (elGreeting) elGreeting.textContent = "Olá, " + adminNome.split(" ")[0] + " 👋";
+
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("sidebar-aberta");
+      sidebarOverlay.classList.toggle("ativo");
+    });
+    sidebarOverlay.addEventListener("click", () => {
+      sidebar.classList.remove("sidebar-aberta");
+      sidebarOverlay.classList.remove("ativo");
+    });
+  }
 
   if (await ehSenhaPadrao()) {
     document.getElementById("bannerSenhaPadrao").classList.remove("escondido");
   }
 
-  // Abas
   document.querySelectorAll(".aba").forEach(btn => {
     btn.addEventListener("click", () => trocarAba(btn.dataset.aba));
   });
@@ -80,7 +100,6 @@ async function mostrarPainel() {
     });
   });
 
-  // Forms
   document.getElementById("formProduto").addEventListener("submit", salvarProduto);
   document.getElementById("btnCancelar").addEventListener("click", limparFormProduto);
   document.getElementById("formCategoria").addEventListener("submit", adicionarCategoria);
@@ -89,7 +108,31 @@ async function mostrarPainel() {
   document.getElementById("formConfig").addEventListener("submit", salvarConfig);
   document.getElementById("formSenha").addEventListener("submit", trocarSenha);
 
-  // Filtros / buscas
+  document.getElementById("prodImagemArquivo").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      mostrarToast("📷 Processando imagem...");
+      imagemBase64 = await resizarImagem(file);
+      document.getElementById("prodImagem").value = "";
+      previsualizarImagem(imagemBase64);
+      mostrarToast("✅ Imagem carregada!");
+    } catch (err) { mostrarToast("Erro ao carregar a imagem."); }
+  });
+
+  document.getElementById("prodImagem").addEventListener("input", e => {
+    imagemBase64 = null;
+    document.getElementById("prodImagemArquivo").value = "";
+    previsualizarImagem(e.target.value);
+  });
+
+  document.getElementById("btnRemoverImagem").addEventListener("click", () => {
+    imagemBase64 = null;
+    document.getElementById("prodImagem").value = "";
+    document.getElementById("prodImagemArquivo").value = "";
+    document.getElementById("previewImagem").classList.add("escondido");
+  });
+
   document.getElementById("filtroStatus").addEventListener("change", e => {
     filtroStatus = e.target.value; renderizarPedidos();
   });
@@ -103,7 +146,6 @@ async function mostrarPainel() {
     buscaCliente = e.target.value.toLowerCase().trim(); renderizarClientes();
   });
 
-  // Render inicial
   renderizarPedidos();
   atualizarDashboard();
   renderizarProdutos();
@@ -116,7 +158,6 @@ async function mostrarPainel() {
   renderizarHorarios();
   atualizarBadgePedidos();
 
-  // Polling de pedidos novos
   window.addEventListener("storage", (e) => {
     if (e.key === "pedidos") verificarNovosPedidos();
   });
@@ -129,9 +170,6 @@ function sair() {
   location.reload();
 }
 
-/* -----------------------------------------------------
-   Detectar pedido novo + beep + flash
------------------------------------------------------ */
 function verificarNovosPedidos() {
   const atualizados = carregarPedidos();
   const novos = atualizados.filter(p => !idsConhecidos.has(p.id));
@@ -182,9 +220,6 @@ function flashTitulo(qtd) {
   });
 }
 
-/* -----------------------------------------------------
-   Trocar aba
------------------------------------------------------ */
 function trocarAba(nome) {
   document.querySelectorAll(".aba").forEach(b => b.classList.toggle("ativa", b.dataset.aba === nome));
   document.querySelectorAll(".painel").forEach(p => p.classList.add("escondido"));
@@ -196,26 +231,82 @@ function trocarAba(nome) {
   };
   document.getElementById(mapa[nome]).classList.remove("escondido");
 
+  const titulos = {
+    pedidos: "Dashboard & Pedidos", produtos: "Produtos",
+    categorias: "Categorias", cupons: "Cupons",
+    clientes: "Clientes", funcionarios: "Funcionários", config: "Configurações"
+  };
+  const elTitulo = document.getElementById("topbarTitulo");
+  if (elTitulo) elTitulo.textContent = titulos[nome] || nome;
+
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (sidebar && sidebar.classList.contains("sidebar-aberta")) {
+    sidebar.classList.remove("sidebar-aberta");
+    if (overlay) overlay.classList.remove("ativo");
+  }
+
   if (nome === "pedidos") { pedidos = carregarPedidos(); renderizarPedidos(); atualizarDashboard(); }
   if (nome === "clientes") { clientes = carregarClientes(); renderizarClientes(); }
   if (nome === "cupons") { cupons = carregarCupons(); renderizarCupons(); }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.querySelector(".admin-content")?.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* =====================================================
-   📊 DASHBOARD
-===================================================== */
 function atualizarDashboard() {
   const e = estatisticasHoje();
   document.getElementById("dashPedidosHoje").textContent = e.pedidosHoje;
   document.getElementById("dashVendasHoje").textContent = "R$ " + formatarPreco(e.vendasHoje);
   document.getElementById("dashTicket").textContent = "R$ " + formatarPreco(e.ticketMedio);
   document.getElementById("dashPendentes").textContent = e.pendentes;
+  renderizarGraficoDash();
+  renderizarAtividade();
 }
 
-/* =====================================================
-   📦 PEDIDOS
-===================================================== */
+function renderizarGraficoDash() {
+  const el = document.getElementById("dashChart");
+  if (!el) return;
+  const hoje = new Date().toDateString();
+  const pedidosHoje = pedidos.filter(p => new Date(p.dataHora).toDateString() === hoje);
+  const horas = Array(24).fill(0);
+  pedidosHoje.forEach(p => { horas[new Date(p.dataHora).getHours()]++; });
+  const horasVisiveis = [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
+  const max = Math.max(...horasVisiveis.map(h => horas[h]), 1);
+  el.innerHTML = horasVisiveis.map(h => {
+    const pct = Math.round((horas[h] / max) * 100);
+    const atual = new Date().getHours() === h;
+    return `<div class="chart-col">
+      <div class="chart-bar-wrap">
+        <div class="chart-bar${atual ? ' chart-bar-atual' : ''}" style="height:${Math.max(pct,3)}%">
+          ${horas[h] > 0 ? `<span class="chart-tip">${horas[h]}</span>` : ""}
+        </div>
+      </div>
+      <span class="chart-label">${h}h</span>
+    </div>`;
+  }).join("");
+  if (pedidosHoje.length === 0) {
+    el.innerHTML = `<div class="chart-vazio">Nenhum pedido hoje ainda</div>`;
+  }
+}
+
+function renderizarAtividade() {
+  const el = document.getElementById("dashAtividade");
+  if (!el) return;
+  const recentes = pedidos.slice(0, 6);
+  if (recentes.length === 0) {
+    el.innerHTML = "<p class='vazio'>Nenhum pedido ainda.</p>";
+    return;
+  }
+  el.innerHTML = recentes.map(p => `
+    <div class="ativ-item">
+      <div class="ativ-avatar">${p.cliente.nome.charAt(0).toUpperCase()}</div>
+      <div class="ativ-info">
+        <span class="ativ-nome">${p.cliente.nome}</span>
+        <span class="ativ-val">R$ ${formatarPreco(p.total)}</span>
+      </div>
+      <span class="badge-status status-${statusClasse(p.status)}">${p.status}</span>
+    </div>`).join("");
+}
+
 function renderizarPedidos() {
   const lista = document.getElementById("listaPedidos");
   let filtrados = filtroStatus
@@ -396,9 +487,6 @@ function atualizarBadgePedidos() {
   else { badge.style.display = "none"; }
 }
 
-/* =====================================================
-   🖨️ IMPRESSÃO 80mm — agora inclui pagamento e cupom
-===================================================== */
 function imprimirPedido(p) {
   const w = window.open("", "_blank", "width=400,height=700");
   if (!w) { alert("Permita pop-ups neste site para conseguir imprimir."); return; }
@@ -468,14 +556,40 @@ function imprimirPedido(p) {
   <hr>
   <p class="center bold">Status: ${p.status}</p>
   <p class="center" style="font-size:10px; margin-top:8px;">--- Obrigado pela preferência! ---</p>
-  <script>window.onload = function() { window.print(); setTimeout(function(){window.close();}, 600); };</script>
+  <script>window.onload = function() { window.print(); setTimeout(function(){window.close();}, 600); };<\/script>
 </body></html>`);
   w.document.close();
 }
 
-/* =====================================================
-   🍕 PRODUTOS (com busca e ativo/inativo)
-===================================================== */
+function resizarImagem(file, maxWidth = 900, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function previsualizarImagem(src) {
+  const wrap = document.getElementById("previewImagem");
+  const img = document.getElementById("previewImg");
+  if (!src) { wrap.classList.add("escondido"); return; }
+  img.src = src;
+  wrap.classList.remove("escondido");
+}
+
 function renderizarProdutos() {
   const lista = document.getElementById("listaAdmin");
   lista.innerHTML = "";
@@ -494,27 +608,35 @@ function renderizarProdutos() {
     return;
   }
 
+  lista.className = "prod-grid";
   filtrados.forEach(p => {
-    const linha = document.createElement("div");
-    linha.className = "linha-admin" + (p.ativo === false ? " inativo" : "");
-    linha.innerHTML = `
-      <img src="${p.imagem}" alt="${p.nome}"
-           onerror="this.src='https://via.placeholder.com/100?text=Sem+Imagem'" />
-      <div class="linha-info">
-        <h4>${p.nome} ${p.ativo === false ? '<span class="tag-off">OCULTO</span>' : ""}</h4>
-        <small>${p.categoria} - R$ ${formatarPreco(p.preco)}</small>
+    const card = document.createElement("div");
+    card.className = "prod-card" + (p.ativo === false ? " prod-inativo" : "");
+    const imgSrc = p.imagem || "";
+    card.innerHTML = `
+      <div class="prod-card-img">
+        <img src="${imgSrc}" alt="${p.nome}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <div class="prod-card-sem-img" style="display:none">🍕</div>
+        ${p.ativo === false ? '<span class="prod-tag-off">OCULTO</span>' : ""}
+        ${p.badge ? `<span class="prod-badge-pill">${p.badge.replace(/[🔥⭐🆕🏷️]/g,"").trim()}</span>` : ""}
       </div>
-      <div class="linha-acoes">
-        <button class="btn-toggle" title="${p.ativo === false ? 'Ativar (mostrar no cardápio)' : 'Desativar (ocultar)'}">
-          ${p.ativo === false ? "🔴" : "🟢"}
+      <div class="prod-card-corpo">
+        <h4 class="prod-card-nome">${p.nome}</h4>
+        <p class="prod-card-cat">${p.categoria}</p>
+        <p class="prod-card-preco">R$ ${formatarPreco(p.preco)}</p>
+      </div>
+      <div class="prod-card-acoes">
+        <button class="btn-toggle-card" title="${p.ativo === false ? 'Ativar' : 'Desativar'}">
+          ${p.ativo === false ? "🔴 Ativar" : "🟢 Ativo"}
         </button>
-        <button class="btn-editar">Editar</button>
-        <button class="btn-excluir">Excluir</button>
+        <button class="btn-editar-card">✏️ Editar</button>
+        <button class="btn-excluir-card">🗑️</button>
       </div>`;
-    linha.querySelector(".btn-toggle").addEventListener("click", () => alternarAtivo(p.id));
-    linha.querySelector(".btn-editar").addEventListener("click", () => editarProduto(p.id));
-    linha.querySelector(".btn-excluir").addEventListener("click", () => excluirProduto(p.id));
-    lista.appendChild(linha);
+    card.querySelector(".btn-toggle-card").addEventListener("click", () => alternarAtivo(p.id));
+    card.querySelector(".btn-editar-card").addEventListener("click", () => editarProduto(p.id));
+    card.querySelector(".btn-excluir-card").addEventListener("click", () => excluirProduto(p.id));
+    lista.appendChild(card);
   });
 }
 
@@ -549,8 +671,9 @@ function salvarProduto(e) {
     nome: document.getElementById("prodNome").value.trim(),
     descricao: document.getElementById("prodDescricao").value.trim(),
     preco: parseFloat(document.getElementById("prodPreco").value),
-    imagem: document.getElementById("prodImagem").value.trim(),
+    imagem: imagemBase64 || document.getElementById("prodImagem").value.trim(),
     categoria: document.getElementById("prodCategoria").value,
+    badge: document.getElementById("prodBadge").value,
     ativo: document.getElementById("prodAtivo").checked
   };
   if (id) {
@@ -573,8 +696,11 @@ function editarProduto(id) {
   document.getElementById("prodNome").value = p.nome;
   document.getElementById("prodDescricao").value = p.descricao;
   document.getElementById("prodPreco").value = p.preco;
-  document.getElementById("prodImagem").value = p.imagem;
+  imagemBase64 = null;
+  document.getElementById("prodImagem").value = p.imagem && p.imagem.startsWith("data:") ? "" : (p.imagem || "");
+  document.getElementById("prodBadge").value = p.badge || "";
   document.getElementById("prodAtivo").checked = p.ativo !== false;
+  previsualizarImagem(p.imagem);
 
   if (!categorias.find(c => c.nome === p.categoria)) {
     const opt = document.createElement("option");
@@ -601,11 +727,12 @@ function limparFormProduto() {
   document.getElementById("prodAtivo").checked = true;
   document.getElementById("tituloForm").textContent = "Adicionar Novo Produto";
   document.getElementById("btnCancelar").classList.add("escondido");
+  imagemBase64 = null;
+  document.getElementById("prodImagemArquivo").value = "";
+  document.getElementById("prodBadge").value = "";
+  document.getElementById("previewImagem").classList.add("escondido");
 }
 
-/* =====================================================
-   🏷️ CATEGORIAS — com reordenação
-===================================================== */
 function renderizarCategoriasLista() {
   const lista = document.getElementById("listaCategorias");
   lista.innerHTML = "";
@@ -613,25 +740,29 @@ function renderizarCategoriasLista() {
     lista.innerHTML = "<p class='vazio'>Nenhuma categoria cadastrada.</p>";
     return;
   }
+  const CORES_CAT = ["#e74c3c","#e67e22","#f1c40f","#2ecc71","#3498db","#9b59b6","#1abc9c","#e91e63","#00bcd4","#ff5722"];
+  lista.className = "cat-chips-grid";
   categorias.forEach((c, idx) => {
     const qtd = produtos.filter(p => p.categoria === c.nome).length;
-    const linha = document.createElement("div");
-    linha.className = "linha-admin";
-    linha.innerHTML = `
-      <div class="cat-icon">🏷️</div>
-      <div class="linha-info">
-        <h4>${c.nome}</h4>
-        <small>${qtd} produto(s)</small>
+    const cor = CORES_CAT[idx % CORES_CAT.length];
+    const chip = document.createElement("div");
+    chip.className = "cat-chip";
+    chip.style.borderColor = cor;
+    chip.innerHTML = `
+      <div class="cat-chip-topo">
+        <span class="cat-chip-dot" style="background:${cor}"></span>
+        <span class="cat-chip-nome">${c.nome}</span>
+        <span class="cat-chip-qtd" style="background:${cor}20;color:${cor}">${qtd} item${qtd !== 1 ? "s" : ""}</span>
       </div>
-      <div class="linha-acoes">
-        <button class="btn-mini" data-acao="cima" ${idx === 0 ? "disabled" : ""}>↑</button>
-        <button class="btn-mini" data-acao="baixo" ${idx === categorias.length - 1 ? "disabled" : ""}>↓</button>
-        <button class="btn-excluir" data-acao="del">Remover</button>
+      <div class="cat-chip-acoes">
+        <button class="btn-mini" data-acao="cima" ${idx === 0 ? "disabled" : ""} title="Mover para cima">↑</button>
+        <button class="btn-mini" data-acao="baixo" ${idx === categorias.length - 1 ? "disabled" : ""} title="Mover para baixo">↓</button>
+        <button class="btn-excluir-sm" data-acao="del" title="Remover">✕</button>
       </div>`;
-    linha.querySelector('[data-acao="cima"]').addEventListener("click", () => moverCategoria(idx, -1));
-    linha.querySelector('[data-acao="baixo"]').addEventListener("click", () => moverCategoria(idx, +1));
-    linha.querySelector('[data-acao="del"]').addEventListener("click", () => removerCategoria(c.id));
-    lista.appendChild(linha);
+    chip.querySelector('[data-acao="cima"]').addEventListener("click", () => moverCategoria(idx, -1));
+    chip.querySelector('[data-acao="baixo"]').addEventListener("click", () => moverCategoria(idx, +1));
+    chip.querySelector('[data-acao="del"]').addEventListener("click", () => removerCategoria(c.id));
+    lista.appendChild(chip);
   });
 }
 
@@ -680,9 +811,6 @@ function removerCategoria(id) {
   mostrarToast("Categoria removida.");
 }
 
-/* =====================================================
-   🎟️ CUPONS
-===================================================== */
 function renderizarCupons() {
   const lista = document.getElementById("listaCupons");
   lista.innerHTML = "";
@@ -690,22 +818,28 @@ function renderizarCupons() {
     lista.innerHTML = "<p class='vazio'>Nenhum cupom cadastrado.</p>";
     return;
   }
+  lista.className = "cupons-lista";
   cupons.forEach(c => {
-    const linha = document.createElement("div");
-    linha.className = "linha-admin" + (c.ativo ? "" : " inativo");
-    linha.innerHTML = `
-      <div class="cat-icon">🎟️</div>
-      <div class="linha-info">
-        <h4><code class="cupom-codigo">${c.codigo}</code> ${c.ativo ? '<span class="tag-on">ATIVO</span>' : '<span class="tag-off">INATIVO</span>'}</h4>
-        <small><strong>${c.percentual}%</strong> de desconto${c.minimo ? ` · pedido mínimo R$ ${formatarPreco(c.minimo)}` : ""}</small>
+    const ticket = document.createElement("div");
+    ticket.className = "cupom-ticket" + (c.ativo ? "" : " cupom-ticket-inativo");
+    ticket.innerHTML = `
+      <div class="ticket-esq">
+        <span class="ticket-pct">${c.percentual}%</span>
+        <span class="ticket-off">OFF</span>
       </div>
-      <div class="linha-acoes">
-        <button class="btn-mini" data-acao="toggle">${c.ativo ? "Desativar" : "Ativar"}</button>
-        <button class="btn-excluir" data-acao="del">Remover</button>
+      <div class="ticket-sep"><span></span></div>
+      <div class="ticket-dir">
+        <code class="ticket-codigo">${c.codigo}</code>
+        <span class="ticket-min">${c.minimo ? `Mín. R$ ${formatarPreco(c.minimo)}` : "Sem pedido mínimo"}</span>
+        <span class="${c.ativo ? "tag-on" : "tag-off"}">${c.ativo ? "✓ Ativo" : "✗ Pausado"}</span>
+      </div>
+      <div class="ticket-acoes">
+        <button class="btn-mini" data-acao="toggle" title="${c.ativo ? 'Pausar' : 'Ativar'}">${c.ativo ? "⏸ Pausar" : "▶ Ativar"}</button>
+        <button class="btn-excluir-sm" data-acao="del" title="Remover">✕</button>
       </div>`;
-    linha.querySelector('[data-acao="toggle"]').addEventListener("click", () => alternarCupom(c.id));
-    linha.querySelector('[data-acao="del"]').addEventListener("click", () => removerCupom(c.id));
-    lista.appendChild(linha);
+    ticket.querySelector('[data-acao="toggle"]').addEventListener("click", () => alternarCupom(c.id));
+    ticket.querySelector('[data-acao="del"]').addEventListener("click", () => removerCupom(c.id));
+    lista.appendChild(ticket);
   });
 }
 
@@ -749,9 +883,6 @@ function removerCupom(id) {
   mostrarToast("Cupom removido.");
 }
 
-/* =====================================================
-   👤 CLIENTES
-===================================================== */
 function renderizarClientes() {
   const lista = document.getElementById("listaClientes");
   lista.innerHTML = "";
@@ -769,29 +900,36 @@ function renderizarClientes() {
     return;
   }
 
+  lista.className = "clientes-lista";
   filtrados.forEach(c => {
     const meusPedidos = pedidos.filter(p => p.cliente.telefone === c.telefone);
     const totalGasto = meusPedidos.reduce((s, p) => s + (p.total || 0), 0);
-    const ultimo = meusPedidos[0]; // pedidos mais recentes vêm primeiro
+    const ultimo = meusPedidos[0];
 
-    const linha = document.createElement("div");
-    linha.className = "linha-admin";
-    linha.innerHTML = `
-      <div class="cat-icon">👤</div>
-      <div class="linha-info">
-        <h4>${c.nome}</h4>
-        <small>📞 ${c.telefone}</small><br>
-        <small>📍 ${c.endereco}</small><br>
-        <small><strong>${meusPedidos.length}</strong> pedido(s) · Total gasto: <strong>R$ ${formatarPreco(totalGasto)}</strong></small>
-        ${ultimo ? `<br><small>Último: ${formatarData(ultimo.dataHora)}</small>` : ""}
+    const card = document.createElement("div");
+    card.className = "cliente-card";
+    card.innerHTML = `
+      <div class="cliente-avatar">${c.nome.charAt(0).toUpperCase()}</div>
+      <div class="cliente-info">
+        <h4 class="cliente-nome">${c.nome}</h4>
+        <p class="cliente-tel">📞 ${c.telefone}</p>
+        <p class="cliente-end">📍 ${c.endereco}</p>
+        ${ultimo ? `<p class="cliente-ultimo">Último pedido: ${formatarData(ultimo.dataHora)}</p>` : ""}
+      </div>
+      <div class="cliente-stats">
+        <div class="cliente-stat">
+          <span class="cstat-val">${meusPedidos.length}</span>
+          <span class="cstat-label">pedidos</span>
+        </div>
+        <div class="cliente-stat verde">
+          <span class="cstat-val">R$ ${formatarPreco(totalGasto)}</span>
+          <span class="cstat-label">total gasto</span>
+        </div>
       </div>`;
-    lista.appendChild(linha);
+    lista.appendChild(card);
   });
 }
 
-/* =====================================================
-   👷 FUNCIONÁRIOS
-===================================================== */
 function renderizarFuncionarios() {
   const lista = document.getElementById("listaFuncionarios");
   lista.innerHTML = "";
@@ -799,20 +937,22 @@ function renderizarFuncionarios() {
     lista.innerHTML = "<p class='vazio'>Nenhum funcionário cadastrado.</p>";
     return;
   }
+  const CORES_FUNCAO = { "Atendente":"#2196F3","Pizzaiolo":"#FF5722","Entregador":"#9C27B0","Caixa":"#4CAF50","Gerente":"#FF9800" };
+  lista.className = "func-grid";
   funcionarios.forEach(f => {
-    const linha = document.createElement("div");
-    linha.className = "linha-admin";
-    linha.innerHTML = `
-      <div class="cat-icon">👷</div>
-      <div class="linha-info">
-        <h4>${f.nome}</h4>
-        <small>${f.funcao}${f.telefone ? " · 📞 " + f.telefone : ""}</small>
+    const cor = CORES_FUNCAO[f.funcao] || "#607D8B";
+    const card = document.createElement("div");
+    card.className = "func-card";
+    card.innerHTML = `
+      <div class="func-avatar" style="background:${cor}">${f.nome.charAt(0).toUpperCase()}</div>
+      <div class="func-info">
+        <h4 class="func-nome">${f.nome}</h4>
+        <span class="func-badge" style="background:${cor}18;color:${cor};border-color:${cor}40">${f.funcao}</span>
+        ${f.telefone ? `<p class="func-tel">📞 ${f.telefone}</p>` : ""}
       </div>
-      <div class="linha-acoes">
-        <button class="btn-excluir">Remover</button>
-      </div>`;
-    linha.querySelector(".btn-excluir").addEventListener("click", () => removerFuncionario(f.id));
-    lista.appendChild(linha);
+      <button class="btn-excluir-sm func-del" title="Remover">✕</button>`;
+    card.querySelector(".func-del").addEventListener("click", () => removerFuncionario(f.id));
+    lista.appendChild(card);
   });
 }
 
@@ -839,9 +979,6 @@ function removerFuncionario(id) {
   mostrarToast("Funcionário removido.");
 }
 
-/* =====================================================
-   ⚙️ CONFIGURAÇÕES
-===================================================== */
 function preencherConfig() {
   document.getElementById("cfgNome").value = config.nomeLoja || "";
   document.getElementById("cfgDescricao").value = config.descricao || "";
@@ -906,13 +1043,11 @@ function salvarConfig(e) {
   };
   salvarLS("config", config);
   aplicarCor(config.cor);
-  document.getElementById("adminLogo").textContent = "Admin - " + config.nomeLoja;
+  const elSN = document.getElementById("sidebarNome");
+  if (elSN) elSN.textContent = config.nomeLoja;
   mostrarToast("✅ Configurações salvas!");
 }
 
-/* =====================================================
-   🔑 TROCAR SENHA
-===================================================== */
 async function trocarSenha(e) {
   e.preventDefault();
   const erro = document.getElementById("erroSenha");
