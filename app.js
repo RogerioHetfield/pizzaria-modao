@@ -10,6 +10,7 @@ let categoriaAtiva = "Todas";
 let termoBusca = "";
 let aberta = false;
 let cupomAplicado = null;
+let pixConfirmado = false;
 
 const elListaProdutos = document.getElementById("listaProdutos");
 const elCategorias = document.getElementById("categorias");
@@ -82,6 +83,14 @@ function iniciar() {
   });
 
   elFormPedido.addEventListener("submit", enviarPedidoWhatsapp);
+  document.getElementById("btnVoltarPix").addEventListener("click", fecharModalPix);
+  document.getElementById("btnFecharPix").addEventListener("click", fecharModalPix);
+  document.getElementById("btnCopiarPix").addEventListener("click", copiarChavePix);
+  document.getElementById("btnConfirmarPix").addEventListener("click", () => {
+    pixConfirmado = true;
+    fecharModalPix();
+    elFormPedido.requestSubmit();
+  });
   ["nome", "telefone", "endereco"].forEach(id => {
     document.getElementById(id).addEventListener("input", salvarDadosCliente);
   });
@@ -480,6 +489,44 @@ function salvarDadosCliente() {
   salvarLS("cliente", dadosCliente);
 }
 
+function abrirModalPix(total) {
+  const modal = document.getElementById("modalPagamentoPix");
+  const chave = (config.pixChave || "").trim();
+  if (!chave) {
+    mostrarToast("⚠️ A chave PIX não está cadastrada. Entre em contato com a pizzaria.");
+    return;
+  }
+  document.getElementById("pixValorTotal").textContent = formatarPreco(total);
+  document.getElementById("pixChaveExibida").textContent = chave;
+  document.getElementById("pixTipoExibido").textContent = config.pixTipo || "Chave PIX";
+  document.getElementById("pixTitularExibido").textContent = config.pixTitular || config.nomeLoja || "—";
+  modal.classList.remove("escondido");
+}
+
+function fecharModalPix() {
+  document.getElementById("modalPagamentoPix").classList.add("escondido");
+}
+
+async function copiarChavePix() {
+  const chave = (config.pixChave || "").trim();
+  if (!chave) return;
+  try {
+    await navigator.clipboard.writeText(chave);
+    mostrarToast("✅ Chave PIX copiada!");
+  } catch (erro) {
+    const campo = document.createElement("textarea");
+    campo.value = chave;
+    campo.setAttribute("readonly", "");
+    campo.style.position = "fixed";
+    campo.style.opacity = "0";
+    document.body.appendChild(campo);
+    campo.select();
+    const copiou = document.execCommand("copy");
+    campo.remove();
+    mostrarToast(copiou ? "✅ Chave PIX copiada!" : "Não foi possível copiar. Selecione e copie a chave.");
+  }
+}
+
 function enviarPedidoWhatsapp(evento) {
   evento.preventDefault();
   if (carrinho.length === 0) { mostrarToast("Seu carrinho está vazio!"); return; }
@@ -520,6 +567,12 @@ function enviarPedidoWhatsapp(evento) {
       trocoInfo = { precisa: false };
     }
   }
+
+  if (pagamento === "PIX" && !pixConfirmado) {
+    abrirModalPix(total);
+    return;
+  }
+  pixConfirmado = false;
 
   let msg = `*${config.nomeLoja}*\n\n📦 *Pedido*\n\n`;
   msg += `👤 Cliente: ${nome}\n📞 Telefone: ${telefone}\n📍 Endereço: ${endereco}\n\n`;

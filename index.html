@@ -199,6 +199,35 @@
     </div>
   </div>
 
+  <div id="modalPagamentoPix" class="modal escondido" role="dialog" aria-modal="true" aria-labelledby="tituloPagamentoPix">
+    <div class="modal-conteudo modal-pix">
+      <button type="button" class="fechar" id="btnFecharPix" aria-label="Fechar">×</button>
+      <div class="pix-icone">🔷</div>
+      <h2 id="tituloPagamentoPix">Pague com PIX</h2>
+      <p class="pix-instrucao">Faça o pagamento antes de enviar seu pedido para a pizzaria.</p>
+      <div class="pix-total">
+        <span>Valor do pedido</span>
+        <strong>R$ <span id="pixValorTotal">0,00</span></strong>
+      </div>
+      <div class="pix-dado">
+        <span>Tipo de chave</span>
+        <strong id="pixTipoExibido">Chave PIX</strong>
+      </div>
+      <div class="pix-dado">
+        <span>Chave PIX</span>
+        <strong id="pixChaveExibida" class="pix-chave"></strong>
+      </div>
+      <button type="button" id="btnCopiarPix" class="btn-copiar-pix">📋 Copiar chave PIX</button>
+      <div class="pix-dado pix-titular">
+        <span>Nome do titular</span>
+        <strong id="pixTitularExibido"></strong>
+      </div>
+      <p class="pix-aviso">Depois de realizar o pagamento, toque em <strong>“Já paguei, enviar pedido”</strong>. A pizzaria ainda precisará confirmar o recebimento do PIX.</p>
+      <button type="button" id="btnConfirmarPix" class="btn-whatsapp btn-confirmar-pix">✅ Já paguei, enviar pedido</button>
+      <button type="button" id="btnVoltarPix" class="btn-voltar-pix">Voltar ao pedido</button>
+    </div>
+  </div>
+
   <div id="barraInferior" class="barra-inferior escondido">
     <div class="barra-info">
       <span id="barraQtdTexto" class="barra-qtd-texto">0 itens</span>
