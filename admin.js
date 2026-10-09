@@ -383,6 +383,27 @@ function proximoStatusBotao(status) {
   return `<button class="btn-mini btn-avancar" data-acao="avancar">→ ${STATUS_PEDIDO[idx + 1]}</button>`;
 }
 
+
+function abrirWhatsAppStatus(p, status = p.status) {
+  if (!p || !p.cliente || !p.cliente.telefone) {
+    mostrarToast("Este pedido não tem telefone cadastrado.");
+    return;
+  }
+
+  const mensagens = {
+    "Recebido": `Olá, ${p.cliente.nome}! 🍕 Recebemos seu pedido #${String(p.id).slice(-5)} na ${config.nomeLoja || "Pizzaria Modão"}. Obrigado pela preferência! Em breve começaremos a preparar seu pedido.`,
+    "Em preparo": `Olá, ${p.cliente.nome}! 🍕 Seu pedido #${String(p.id).slice(-5)} já está em preparo. Avisaremos quando sair para entrega.`,
+    "Saiu para entrega": `Olá, ${p.cliente.nome}! 🛵 Seu pedido #${String(p.id).slice(-5)} saiu para entrega. Obrigado por pedir com a ${config.nomeLoja || "Pizzaria Modão"}!`,
+    "Finalizado": `Olá, ${p.cliente.nome}! ✅ Seu pedido #${String(p.id).slice(-5)} foi finalizado. Obrigado pela preferência e esperamos seu próximo pedido!`
+  };
+
+  const telefone = String(p.cliente.telefone).replace(/\D/g, "");
+  const telefoneBR = telefone.startsWith("55") ? telefone : "55" + telefone;
+  const mensagem = mensagens[status] || `Olá, ${p.cliente.nome}! Atualização do pedido #${String(p.id).slice(-5)}: ${status}.`;
+  const url = `https://wa.me/${telefoneBR}?text=${encodeURIComponent(mensagem)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 function avancarStatus(id) {
   const p = pedidos.find(x => x.id === id);
   if (!p) return;
@@ -392,6 +413,7 @@ function avancarStatus(id) {
     salvarLS("pedidos", pedidos);
     renderizarPedidos(); atualizarDashboard(); atualizarBadgePedidos();
     mostrarToast(`Pedido agora: ${p.status}`);
+    abrirWhatsAppStatus(p, p.status);
   }
 }
 
@@ -455,22 +477,27 @@ function abrirDetalhePedido(id) {
 
     <div class="acoes-form" style="margin-top:16px; flex-wrap:wrap;">
       <button class="btn-secundario" id="btnFecharModal">Fechar</button>
+      <button class="btn-primario" id="btnEnviarWhatsAppStatus">💬 Enviar mensagem ao cliente</button>
       <button class="btn-primario" id="btnImprimirPedido">🖨️ Imprimir cupom</button>
       <button class="btn-excluir" id="btnExcluirPedido">🗑️ Excluir</button>
     </div>`;
 
   corpo.querySelectorAll(".btn-status").forEach(b => {
     b.addEventListener("click", () => {
-      p.status = b.dataset.status;
+      const statusAnterior = p.status;
+      const novoStatus = b.dataset.status;
+      p.status = novoStatus;
       salvarLS("pedidos", pedidos);
       renderizarPedidos(); atualizarDashboard(); atualizarBadgePedidos();
       abrirDetalhePedido(id);
       mostrarToast(`Status atualizado: ${p.status}`);
+      if (novoStatus !== statusAnterior) abrirWhatsAppStatus(p, novoStatus);
     });
   });
   corpo.querySelector("#btnFecharModal").addEventListener("click", () => {
     document.getElementById("modalPedido").classList.add("escondido");
   });
+  corpo.querySelector("#btnEnviarWhatsAppStatus").addEventListener("click", () => abrirWhatsAppStatus(p, p.status));
   corpo.querySelector("#btnImprimirPedido").addEventListener("click", () => imprimirPedido(p));
   corpo.querySelector("#btnExcluirPedido").addEventListener("click", () => {
     if (!confirm("Excluir este pedido permanentemente?")) return;
