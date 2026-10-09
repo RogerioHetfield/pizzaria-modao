@@ -403,8 +403,11 @@ function abrirWhatsAppStatus(p, status = p.status) {
   const telefone = String(p.cliente.telefone).replace(/\D/g, "");
   const telefoneBR = telefone.startsWith("55") ? telefone : "55" + telefone;
   const mensagem = mensagens[status] || `Olá, ${p.cliente.nome}! Atualização do pedido #${String(p.id).slice(-5)}: ${status}.`;
-  const url = `https://wa.me/${telefoneBR}?text=${encodeURIComponent(mensagem)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
+
+const parametros = new URLSearchParams();
+parametros.set("text", mensagem);
+
+const url = `https://api.whatsapp.com/send?phone=${telefoneBR}&${parametros.toString()}`;
 }
 
 function avancarStatus(id) {
