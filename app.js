@@ -536,6 +536,25 @@ function enviarPedidoWhatsapp(evento) {
   msg += `\n💵 *Total: R$ ${formatarPreco(total)}*\n`;
 
   msg += `\n💳 *Pagamento:* ${pagamento}`;
+  
+if (pagamento === "PIX") {
+  if (config.pixChave) {
+    msg += `\n\n🔷 *Dados para pagamento via PIX*`;
+
+    if (config.pixTipo) {
+      msg += `\nTipo de chave: ${config.pixTipo}`;
+    }
+
+    msg += `\nChave PIX: ${config.pixChave}`;
+
+    if (config.pixTitular) {
+      msg += `\nTitular: ${config.pixTitular}`;
+    }
+  } else {
+    msg += `\n\n⚠️ A chave PIX não está cadastrada nas configurações da loja.`;
+  }
+}
+
   if (trocoInfo) {
     if (trocoInfo.precisa) {
       msg += `\n💸 Troco para R$ ${formatarPreco(trocoInfo.valor)} (levar R$ ${formatarPreco(trocoInfo.troco)} de troco)`;

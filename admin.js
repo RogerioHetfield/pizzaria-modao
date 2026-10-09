@@ -162,6 +162,10 @@ async function mostrarPainel() {
     if (e.key === "pedidos") verificarNovosPedidos();
   });
   setInterval(verificarNovosPedidos, 5000);
+
+  document.getElementById("cfgPixTipo").value = config.pixTipo || "";
+document.getElementById("cfgPixTitular").value = config.pixTitular || "";
+document.getElementById("cfgPixChave").value = config.pixChave || "";
 }
 
 function sair() {
@@ -1036,6 +1040,9 @@ function salvarConfig(e) {
     whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
     instagram: document.getElementById("cfgInstagram").value.trim(),
     facebook: document.getElementById("cfgFacebook").value.trim(),
+    pixTipo: document.getElementById("cfgPixTipo").value,
+    pixTitular: document.getElementById("cfgPixTitular").value.trim(),
+    pixChave: document.getElementById("cfgPixChave").value.trim(),
     taxa: parseFloat(document.getElementById("cfgTaxa").value),
     minimo: parseFloat(document.getElementById("cfgMinimo").value),
     cor: document.getElementById("cfgCor").value,

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pizzaria D'Casa - Admin</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body class="admin-body">
 
   <div id="telaLogin" class="tela-login">
@@ -104,19 +106,31 @@
             <div class="dashboard-cards">
               <div class="dash-card dash-azul">
                 <div class="dash-icon">📦</div>
-                <div><p class="dash-label">Pedidos hoje</p><p class="dash-valor" id="dashPedidosHoje">0</p></div>
+                <div>
+                  <p class="dash-label">Pedidos hoje</p>
+                  <p class="dash-valor" id="dashPedidosHoje">0</p>
+                </div>
               </div>
               <div class="dash-card dash-verde">
                 <div class="dash-icon">💰</div>
-                <div><p class="dash-label">Vendas hoje</p><p class="dash-valor" id="dashVendasHoje">R$ 0,00</p></div>
+                <div>
+                  <p class="dash-label">Vendas hoje</p>
+                  <p class="dash-valor" id="dashVendasHoje">R$ 0,00</p>
+                </div>
               </div>
               <div class="dash-card dash-laranja">
                 <div class="dash-icon">📊</div>
-                <div><p class="dash-label">Ticket médio</p><p class="dash-valor" id="dashTicket">R$ 0,00</p></div>
+                <div>
+                  <p class="dash-label">Ticket médio</p>
+                  <p class="dash-valor" id="dashTicket">R$ 0,00</p>
+                </div>
               </div>
               <div class="dash-card dash-roxo">
                 <div class="dash-icon">🔥</div>
-                <div><p class="dash-label">Pendentes</p><p class="dash-valor" id="dashPendentes">0</p></div>
+                <div>
+                  <p class="dash-label">Pendentes</p>
+                  <p class="dash-valor" id="dashPendentes">0</p>
+                </div>
               </div>
             </div>
 
@@ -138,7 +152,8 @@
                   <input type="checkbox" id="toggleSom" checked />
                   🔔 Som de pedido novo
                 </label>
-                <input type="search" id="buscaPedido" placeholder="🔍 Buscar por nome, telefone ou #ID..." class="input-busca" />
+                <input type="search" id="buscaPedido" placeholder="🔍 Buscar por nome, telefone ou #ID..."
+                  class="input-busca" />
                 <select id="filtroStatus">
                   <option value="">Todos os status</option>
                   <option value="Recebido">Recebido</option>
@@ -175,7 +190,8 @@
                   <span class="label-campo">Imagem do produto</span>
                   <div id="previewImagem" class="preview-imagem-admin escondido">
                     <img id="previewImg" src="" alt="Preview" />
-                    <button type="button" id="btnRemoverImagem" class="btn-remover-preview" title="Remover imagem">✕ Remover</button>
+                    <button type="button" id="btnRemoverImagem" class="btn-remover-preview" title="Remover imagem">✕
+                      Remover</button>
                   </div>
                   <div class="imagem-opcoes-admin">
                     <label class="btn-upload-arquivo" for="prodImagemArquivo">
@@ -185,7 +201,8 @@
                     <span class="ou-sep">ou</span>
                     <input type="url" id="prodImagem" placeholder="Cole o link da imagem (https://...)" />
                   </div>
-                  <small class="dica-upload">💡 Imagens enviadas são redimensionadas automaticamente para economizar espaço.</small>
+                  <small class="dica-upload">💡 Imagens enviadas são redimensionadas automaticamente para economizar
+                    espaço.</small>
                 </div>
                 <label class="toggle-ativo">
                   <input type="checkbox" id="prodAtivo" checked />
@@ -214,7 +231,8 @@
               </form>
             </div>
             <h2 class="sec-titulo">Categorias cadastradas</h2>
-            <p class="dica">Use ↑ ↓ para reordenar (afeta a ordem no cardápio do cliente). Ao remover, os produtos vão para "Outros".</p>
+            <p class="dica">Use ↑ ↓ para reordenar (afeta a ordem no cardápio do cliente). Ao remover, os produtos vão
+              para "Outros".</p>
             <div id="listaCategorias" class="lista-admin"></div>
           </section>
 
@@ -244,7 +262,8 @@
           <section id="painelClientes" class="painel escondido">
             <h2>Clientes</h2>
             <p class="dica">Clientes são registrados automaticamente quando fazem um pedido.</p>
-            <input type="search" id="buscaCliente" placeholder="🔍 Buscar por nome ou telefone..." class="input-busca-full" />
+            <input type="search" id="buscaCliente" placeholder="🔍 Buscar por nome ou telefone..."
+              class="input-busca-full" />
             <div id="listaClientes" class="lista-admin"></div>
           </section>
 
@@ -280,7 +299,8 @@
                 <label>Descrição curta (aparece em "Sobre")
                   <textarea id="cfgDescricao" rows="2" placeholder="Ex: A melhor pizza artesanal da cidade"></textarea>
                 </label>
-                <label>Endereço completo <input type="text" id="cfgEndereco" placeholder="Rua, número, bairro, cidade" /></label>
+                <label>Endereço completo <input type="text" id="cfgEndereco"
+                    placeholder="Rua, número, bairro, cidade" /></label>
 
                 <h3 class="sub-titulo">Contato e redes</h3>
                 <div class="linha-dupla">
@@ -288,6 +308,30 @@
                   <label>Instagram <input type="text" id="cfgInstagram" placeholder="@perfil" /></label>
                 </div>
                 <label>Facebook <input type="text" id="cfgFacebook" placeholder="usuario.do.facebook" /></label>
+
+                <h3 class="sub-titulo">🔷 Pagamento via PIX</h3>
+
+                <div class="linha-dupla">
+                  <label>Tipo de chave PIX
+                    <select id="cfgPixTipo">
+                      <option value="">Selecione o tipo</option>
+                      <option value="CPF">CPF</option>
+                      <option value="CNPJ">CNPJ</option>
+                      <option value="E-mail">E-mail</option>
+                      <option value="Telefone">Telefone</option>
+                      <option value="Chave aleatória">Chave aleatória</option>
+                    </select>
+                  </label>
+
+                  <label>Nome do titular
+                    <input type="text" id="cfgPixTitular" placeholder="Nome do titular da conta" />
+                  </label>
+                </div>
+
+                <label>Chave PIX
+                  <input type="text" id="cfgPixChave" placeholder="Digite a chave PIX" />
+                </label>
+
 
                 <h3 class="sub-titulo">Pedidos</h3>
                 <div class="linha-dupla">
@@ -311,9 +355,12 @@
               <h2>🔑 Alterar senha do painel</h2>
               <p class="dica">Sua senha atual será substituída. Use uma senha forte que só você sabe.</p>
               <form id="formSenha" class="form-produto">
-                <label>Senha atual <input type="password" id="senhaAtual" required autocomplete="current-password" /></label>
-                <label>Nova senha <input type="password" id="senhaNova" required minlength="4" autocomplete="new-password" /></label>
-                <label>Confirmar nova senha <input type="password" id="senhaConfirma" required minlength="4" autocomplete="new-password" /></label>
+                <label>Senha atual <input type="password" id="senhaAtual" required
+                    autocomplete="current-password" /></label>
+                <label>Nova senha <input type="password" id="senhaNova" required minlength="4"
+                    autocomplete="new-password" /></label>
+                <label>Confirmar nova senha <input type="password" id="senhaConfirma" required minlength="4"
+                    autocomplete="new-password" /></label>
                 <p id="erroSenha" class="erro-login escondido"></p>
                 <button type="submit" class="btn-primario">Alterar senha</button>
               </form>
@@ -337,4 +384,5 @@
   <script src="data.js"></script>
   <script src="admin.js"></script>
 </body>
+
 </html>
