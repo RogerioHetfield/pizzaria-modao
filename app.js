@@ -650,45 +650,38 @@ function enviarPedidoWhatsapp(evento) {
   }
   pixConfirmado = false;
 
-  let msg = `*${config.nomeLoja}*\n\n📦 *Pedido*\n\n`;
-  msg += `👤 Cliente: ${nome}\n📞 Telefone: ${telefone}\n📍 Endereço: ${endereco}\n\n`;
-  msg += `🛒 *Itens:*\n`;
+  // Mensagem do pedido sem emojis para evitar caracteres incompatíveis no WhatsApp.
+  let msg = `*${config.nomeLoja}*\n\n*PEDIDO*\n\n`;
+  msg += `Cliente: ${nome}\nTelefone: ${telefone}\nEndereço: ${endereco}\n\n`;
+  msg += `*ITENS DO PEDIDO:*\n`;
   carrinho.forEach(item => {
-    msg += `• ${item.nome} (R$ ${formatarPreco(item.preco)}) x${item.qtd} = R$ ${formatarPreco(item.preco * item.qtd)}\n`;
+    msg += `- ${item.nome} (R$ ${formatarPreco(item.preco)}) x${item.qtd} = R$ ${formatarPreco(item.preco * item.qtd)}\n`;
   });
-  if (observacao) msg += `\n💬 *Observação:*\n${observacao}\n`;
+  if (observacao) msg += `\n*OBSERVAÇÃO:*\n${observacao}\n`;
 
-  msg += `\n💰 Subtotal: R$ ${formatarPreco(subtotal)}\n🚚 Taxa: R$ ${formatarPreco(taxa)}`;
+  msg += `\nSubtotal: R$ ${formatarPreco(subtotal)}\nTaxa de entrega: R$ ${formatarPreco(taxa)}`;
   if (cupomAplicado) {
-    msg += `\n🎟️ Cupom ${cupomAplicado.cupom.codigo} (-${cupomAplicado.cupom.percentual}%): − R$ ${formatarPreco(desconto)}`;
+    msg += `\nCupom ${cupomAplicado.cupom.codigo} (-${cupomAplicado.cupom.percentual}%): - R$ ${formatarPreco(desconto)}`;
   }
-  msg += `\n💵 *Total: R$ ${formatarPreco(total)}*\n`;
+  msg += `\n*TOTAL: R$ ${formatarPreco(total)}*\n`;
+  msg += `\n*PAGAMENTO:* ${pagamento}`;
 
-  msg += `\n💳 *Pagamento:* ${pagamento}`;
-  
-if (pagamento === "PIX") {
-  if (config.pixChave) {
-    msg += `\n\n🔷 *Dados para pagamento via PIX*`;
-
-    if (config.pixTipo) {
-      msg += `\nTipo de chave: ${config.pixTipo}`;
+  if (pagamento === "PIX") {
+    if (config.pixChave) {
+      msg += `\n\n*DADOS PARA PAGAMENTO VIA PIX*`;
+      if (config.pixTipo) msg += `\nTipo de chave: ${config.pixTipo}`;
+      msg += `\nChave PIX: ${config.pixChave}`;
+      if (config.pixTitular) msg += `\nTitular: ${config.pixTitular}`;
+    } else {
+      msg += `\n\nA chave PIX não está cadastrada nas configurações da loja.`;
     }
-
-    msg += `\nChave PIX: ${config.pixChave}`;
-
-    if (config.pixTitular) {
-      msg += `\nTitular: ${config.pixTitular}`;
-    }
-  } else {
-    msg += `\n\n⚠️ A chave PIX não está cadastrada nas configurações da loja.`;
   }
-}
 
   if (trocoInfo) {
     if (trocoInfo.precisa) {
-      msg += `\n💸 Troco para R$ ${formatarPreco(trocoInfo.valor)} (levar R$ ${formatarPreco(trocoInfo.troco)} de troco)`;
+      msg += `\nTroco para R$ ${formatarPreco(trocoInfo.valor)} (levar R$ ${formatarPreco(trocoInfo.troco)} de troco)`;
     } else {
-      msg += `\n💸 Não precisa de troco`;
+      msg += `\nNão precisa de troco`;
     }
   }
 
