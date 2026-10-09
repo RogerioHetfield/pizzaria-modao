@@ -407,7 +407,8 @@ function abrirWhatsAppStatus(p, status = p.status) {
 const parametros = new URLSearchParams();
 parametros.set("text", mensagem);
 
-const url = `https://api.whatsapp.com/send?phone=${telefoneBR}&${parametros.toString()}`;
+const url = `https://wa.me/${telefoneBR}?text=${encodeURIComponent(mensagem)}`;
+window.open(url, "_blank");
 }
 
 function avancarStatus(id) {
