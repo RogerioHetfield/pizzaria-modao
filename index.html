@@ -213,11 +213,20 @@
         <span>Tipo de chave</span>
         <strong id="pixTipoExibido">Chave PIX</strong>
       </div>
+      <div class="pix-qr-area">
+        <div id="pixQrCode" class="pix-qr-code" aria-label="QR Code de pagamento PIX"></div>
+        <p id="pixQrAviso" class="pix-qr-aviso">Preparando QR Code de pagamento...</p>
+      </div>
       <div class="pix-dado">
         <span>Chave PIX</span>
         <strong id="pixChaveExibida" class="pix-chave"></strong>
       </div>
       <button type="button" id="btnCopiarPix" class="btn-copiar-pix">📋 Copiar chave PIX</button>
+      <details class="pix-copia-cola">
+        <summary>Problemas para escanear? Usar PIX Copia e Cola</summary>
+        <textarea id="pixCopiaECola" readonly rows="3" aria-label="Código PIX Copia e Cola"></textarea>
+        <button type="button" id="btnCopiarPixCopiaCola" class="btn-copiar-pix">📋 Copiar código PIX Copia e Cola</button>
+      </details>
       <div class="pix-dado pix-titular">
         <span>Nome do titular</span>
         <strong id="pixTitularExibido"></strong>
@@ -242,6 +251,7 @@
     <p>© <span id="nomeLojaRodape">Pizzaria D'Casa</span> — Desenvolvido por RGR Systems</p>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

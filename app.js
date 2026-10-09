@@ -86,6 +86,7 @@ function iniciar() {
   document.getElementById("btnVoltarPix").addEventListener("click", fecharModalPix);
   document.getElementById("btnFecharPix").addEventListener("click", fecharModalPix);
   document.getElementById("btnCopiarPix").addEventListener("click", copiarChavePix);
+  document.getElementById("btnCopiarPixCopiaCola").addEventListener("click", copiarPixCopiaCola);
   document.getElementById("btnConfirmarPix").addEventListener("click", () => {
     pixConfirmado = true;
     fecharModalPix();
@@ -489,6 +490,64 @@ function salvarDadosCliente() {
   salvarLS("cliente", dadosCliente);
 }
 
+// Monta um payload PIX estático no padrão EMV/BR Code, com valor definido.
+function pixCampo(id, valor) {
+  const texto = String(valor ?? "");
+  return id + String(texto.length).padStart(2, "0") + texto;
+}
+
+function pixNormalizarTexto(texto, limite) {
+  return String(texto || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 $%*+./:-]/g, " ")
+    .trim().toUpperCase().slice(0, limite) || "PIZZARIA";
+}
+
+function pixCRC16(texto) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < texto.length; i++) {
+    crc ^= texto.charCodeAt(i) << 8;
+    for (let bit = 0; bit < 8; bit++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+
+function gerarPayloadPix(chave, total) {
+  const nome = pixNormalizarTexto(config.pixTitular || config.nomeLoja || "PIZZARIA", 25);
+  // O BR Code limita o campo de cidade a 15 caracteres. Ajuste se a conta estiver cadastrada em outra cidade.
+  const cidade = pixNormalizarTexto(config.pixCidade || "MORUNGABA", 15);
+  const contaPix = pixCampo("00", "br.gov.bcb.pix") + pixCampo("01", chave.trim());
+  const valor = Number(total).toFixed(2);
+  const txid = "PEDIDO";
+  let payload = "000201";
+  payload += pixCampo("26", contaPix);
+  payload += "52040000";
+  payload += "5303986";
+  payload += pixCampo("54", valor);
+  payload += "5802BR";
+  payload += pixCampo("59", nome);
+  payload += pixCampo("60", cidade);
+  payload += pixCampo("62", pixCampo("05", txid));
+  payload += "6304";
+  return payload + pixCRC16(payload);
+}
+
+function renderizarQrPix(payload) {
+  const area = document.getElementById("pixQrCode");
+  const aviso = document.getElementById("pixQrAviso");
+  if (!area) return;
+  area.innerHTML = "";
+  if (typeof QRCode === "undefined") {
+    if (aviso) aviso.textContent = "Não foi possível carregar o QR Code. Use o botão para copiar a chave PIX.";
+    return;
+  }
+  new QRCode(area, { text: payload, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+  if (aviso) aviso.textContent = "Escaneie pelo aplicativo do banco. Confira o nome do recebedor e o valor antes de pagar.";
+}
+
 function abrirModalPix(total) {
   const modal = document.getElementById("modalPagamentoPix");
   const chave = (config.pixChave || "").trim();
@@ -500,11 +559,28 @@ function abrirModalPix(total) {
   document.getElementById("pixChaveExibida").textContent = chave;
   document.getElementById("pixTipoExibido").textContent = config.pixTipo || "Chave PIX";
   document.getElementById("pixTitularExibido").textContent = config.pixTitular || config.nomeLoja || "—";
+  const payloadPix = gerarPayloadPix(chave, total);
+  document.getElementById("pixCopiaECola").value = payloadPix;
+  renderizarQrPix(payloadPix);
   modal.classList.remove("escondido");
 }
 
 function fecharModalPix() {
   document.getElementById("modalPagamentoPix").classList.add("escondido");
+}
+
+async function copiarPixCopiaCola() {
+  const campo = document.getElementById("pixCopiaECola");
+  if (!campo || !campo.value) return;
+  try {
+    await navigator.clipboard.writeText(campo.value);
+    mostrarToast("✅ Código PIX copia e cola copiado!");
+  } catch (erro) {
+    campo.focus();
+    campo.select();
+    const copiou = document.execCommand("copy");
+    mostrarToast(copiou ? "✅ Código PIX copiado!" : "Selecione e copie o código PIX.");
+  }
 }
 
 async function copiarChavePix() {

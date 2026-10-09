@@ -3056,3 +3056,36 @@ body.com-barra { padding-bottom: 72px; }
   .modal-pix { margin-top: 4px; padding: 20px 16px; }
   .pix-total strong { font-size: 1.2rem; }
 }
+
+
+/* QR Code PIX e código copia e cola */
+.pix-qr-area {
+  margin: 16px auto;
+  padding: 16px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+.pix-qr-code {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 220px;
+}
+.pix-qr-code img, .pix-qr-code canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  padding: 8px;
+  background: #fff;
+  border-radius: 8px;
+}
+.pix-qr-aviso { margin-top: 10px; color: #475569; font-size: .82rem; }
+.pix-copia-cola { margin: 12px 0 16px; text-align: left; }
+.pix-copia-cola summary { cursor: pointer; color: #166534; font-weight: 700; font-size: .9rem; }
+.pix-copia-cola textarea {
+  display: block; width: 100%; margin-top: 10px; padding: 10px;
+  border: 1px solid #d1d5db; border-radius: 8px; resize: vertical;
+  font-size: .78rem; overflow-wrap: anywhere;
+}
+.pix-copia-cola .btn-copiar-pix { margin-top: 8px; }
