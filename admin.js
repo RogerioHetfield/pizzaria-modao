@@ -391,11 +391,14 @@ function abrirWhatsAppStatus(p, status = p.status) {
   }
 
   const mensagens = {
-    "Recebido": `Olá, ${p.cliente.nome}! 🍕 Recebemos seu pedido #${String(p.id).slice(-5)} na ${config.nomeLoja || "Pizzaria Modão"}. Obrigado pela preferência! Em breve começaremos a preparar seu pedido.`,
-    "Em preparo": `Olá, ${p.cliente.nome}! 🍕 Seu pedido #${String(p.id).slice(-5)} já está em preparo. Avisaremos quando sair para entrega.`,
-    "Saiu para entrega": `Olá, ${p.cliente.nome}! 🛵 Seu pedido #${String(p.id).slice(-5)} saiu para entrega. Obrigado por pedir com a ${config.nomeLoja || "Pizzaria Modão"}!`,
-    "Finalizado": `Olá, ${p.cliente.nome}! ✅ Seu pedido #${String(p.id).slice(-5)} foi finalizado. Obrigado pela preferência e esperamos seu próximo pedido!`
-  };
+  "Recebido": `Opa, ${p.cliente.nome}! 😄🍕 Seu pedido #${String(p.id).slice(-5)} chegou por aqui! Valeu por pedir com a gente. Daqui a pouquinho vamos preparar tudo com carinho! ❤️`,
+
+  "Em preparo": `Boa, ${p.cliente.nome}! 🍕🔥 Seu pedido #${String(p.id).slice(-5)} já tá sendo preparado! Aguenta só mais um pouquinho que vem coisa boa por aí! 😋`,
+
+  "Saiu para entrega": `Aí sim, ${p.cliente.nome}! 🛵💨 Seu pedido #${String(p.id).slice(-5)} já saiu e tá indo até você! Já pode ir preparando a fome! 😂🍕`,
+
+  "Finalizado": `E aí, ${p.cliente.nome}, tudo certo? 😋🍕 Seu pedido #${String(p.id).slice(-5)} foi finalizado! Obrigado por pedir com a gente. Bom apetite e volte sempre! ❤️🤠`
+};
 
   const telefone = String(p.cliente.telefone).replace(/\D/g, "");
   const telefoneBR = telefone.startsWith("55") ? telefone : "55" + telefone;
