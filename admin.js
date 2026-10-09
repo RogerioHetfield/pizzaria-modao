@@ -391,13 +391,13 @@ function abrirWhatsAppStatus(p, status = p.status) {
   }
 
   const mensagens = {
-  "Recebido": `Opa, ${p.cliente.nome}! 😄🍕 Seu pedido #${String(p.id).slice(-5)} chegou por aqui! Valeu por pedir com a gente. Daqui a pouquinho vamos preparar tudo com carinho! ❤️`,
+  "Recebido": `Opa, ${p.cliente.nome}! Seu pedido #${String(p.id).slice(-5)} chegou por aqui! Valeu por pedir com a gente. Daqui a pouquinho vamos preparar tudo com carinho!`,
 
-  "Em preparo": `Boa, ${p.cliente.nome}! 🍕🔥 Seu pedido #${String(p.id).slice(-5)} já tá sendo preparado! Aguenta só mais um pouquinho que vem coisa boa por aí! 😋`,
+  "Em preparo": `Boa, ${p.cliente.nome}! Seu pedido #${String(p.id).slice(-5)} já está sendo preparado. Aguenta só mais um pouquinho que vem coisa boa por aí!`,
 
-  "Saiu para entrega": `Aí sim, ${p.cliente.nome}! 🛵💨 Seu pedido #${String(p.id).slice(-5)} já saiu e tá indo até você! Já pode ir preparando a fome! 😂🍕`,
+  "Saiu para entrega": `Aí sim, ${p.cliente.nome}! Seu pedido #${String(p.id).slice(-5)} já saiu e está indo até você. Já pode ir preparando a fome!`,
 
-  "Finalizado": `E aí, ${p.cliente.nome}, tudo certo? 😋🍕 Seu pedido #${String(p.id).slice(-5)} foi finalizado! Obrigado por pedir com a gente. Bom apetite e volte sempre! ❤️🤠`
+  "Finalizado": `E aí, ${p.cliente.nome}, tudo certo? Seu pedido #${String(p.id).slice(-5)} foi finalizado! Obrigado por pedir com a gente. Bom apetite e volte sempre!`
 };
 
   const telefone = String(p.cliente.telefone).replace(/\D/g, "");
