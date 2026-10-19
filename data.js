@@ -193,22 +193,27 @@ function carregarCategorias() {
 
 function carregarPedidos() { return lerLS("pedidos") || []; }
 const STATUS_PEDIDO = ["Recebido", "Em preparo", "Saiu para entrega", "Finalizado"];
-function salvarPedido(pedido) {
+async function salvarPedido(pedido) {
+  if (!nuvemPronta) throw new Error("A conexão com a nuvem ainda não está pronta.");
+  // O Supabase atribui o número de forma atômica para evitar números repetidos
+  // quando dois clientes fazem pedidos quase ao mesmo tempo.
+  const { data, error } = await supabaseClient.rpc("registrar_pedido_numerado", {
+    p_id: Number(pedido.id),
+    p_dados: pedido
+  });
+  if (error) throw error;
+  const numeroPedido = Number(data);
+  if (!Number.isSafeInteger(numeroPedido) || numeroPedido < 1) throw new Error("O servidor não retornou um número válido para o pedido.");
+  pedido.numeroPedido = numeroPedido;
   const lista = carregarPedidos();
   lista.unshift(pedido);
   localStorage.setItem("pedidos", JSON.stringify({ valor: lista, timestamp: Date.now() }));
-  // Inserção direta permite que o cliente envie o pedido sem poder ler os pedidos de terceiros.
-  if (nuvemPronta) {
-    void supabaseClient.from("pedidos").insert({
-      id: Number(pedido.id), dados: pedido, status: pedido.status || "Recebido",
-      criado_em: pedido.dataHora || new Date().toISOString()
-    }).then(({ error }) => {
-      if (error) {
-        console.error("Erro ao registrar pedido na nuvem:", error);
-        if (typeof mostrarToast === "function") mostrarToast("⚠️ Não foi possível registrar o pedido na nuvem. Tente novamente.");
-      }
-    });
-  }
+  return numeroPedido;
+}
+
+async function resetarContadorPedidos() {
+  const { error } = await supabaseClient.rpc("resetar_contador_pedidos");
+  if (error) throw error;
 }
 
 function carregarClientes() { return lerLS("clientes") || []; }

@@ -105,6 +105,17 @@ async function mostrarPainel() {
   });
 
   document.getElementById("btnSair").addEventListener("click", sair);
+  document.getElementById("btnResetarContadorPedidos").addEventListener("click", async () => {
+    const confirmado = confirm("Resetar a numeração dos pedidos? Os pedidos antigos manterão seus números, e o próximo pedido será o #1.");
+    if (!confirmado) return;
+    try {
+      await resetarContadorPedidos();
+      mostrarToast("✅ Contagem resetada. O próximo pedido será #1.");
+    } catch (erro) {
+      console.error("Erro ao resetar contador:", erro);
+      mostrarToast("⚠️ Não foi possível resetar. Verifique se o SQL de configuração foi executado no Supabase.");
+    }
+  });
 
   document.querySelectorAll("[data-fechar]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -359,7 +370,7 @@ function renderizarPedidos() {
     card.innerHTML = `
       <div class="pedido-topo">
         <div>
-          <strong>#${p.id.toString().slice(-5)}</strong>
+          <strong>Pedido #${p.numeroPedido || p.id.toString().slice(-5)}</strong>
           <span class="badge-status status-${statusClasse(p.status)}">${p.status}</span>
         </div>
         <small>${formatarData(p.dataHora)}</small>
@@ -404,18 +415,18 @@ function abrirWhatsAppStatus(p, status = p.status) {
   }
 
   const mensagens = {
-    "Recebido": `Opa, ${p.cliente.nome}! \u{1F355}\u{1F604} Seu pedido #${String(p.id).slice(-5)} chegou por aqui! Valeu por pedir com a gente. Daqui a pouquinho vamos preparar tudo com carinho! \u{2764}\u{FE0F}`,
+    "Recebido": `Opa, ${p.cliente.nome}! \u{1F355}\u{1F604} Seu pedido #${(p.numeroPedido || String(p.id).slice(-5))} chegou por aqui! Valeu por pedir com a gente. Daqui a pouquinho vamos preparar tudo com carinho! \u{2764}\u{FE0F}`,
 
-    "Em preparo": `Boa, ${p.cliente.nome}! \u{1F355}\u{1F525} Seu pedido #${String(p.id).slice(-5)} já tá sendo preparado! Aguenta só mais um pouquinho que vem coisa boa por aí! \u{1F60B}`,
+    "Em preparo": `Boa, ${p.cliente.nome}! \u{1F355}\u{1F525} Seu pedido #${(p.numeroPedido || String(p.id).slice(-5))} já tá sendo preparado! Aguenta só mais um pouquinho que vem coisa boa por aí! \u{1F60B}`,
 
-    "Saiu para entrega": `Aí sim, ${p.cliente.nome}! \u{1F6F5} Seu pedido #${String(p.id).slice(-5)} já saiu e tá indo até você! Já pode ir preparando a fome! \u{1F602}\u{1F355}`,
+    "Saiu para entrega": `Aí sim, ${p.cliente.nome}! \u{1F6F5} Seu pedido #${(p.numeroPedido || String(p.id).slice(-5))} já saiu e tá indo até você! Já pode ir preparando a fome! \u{1F602}\u{1F355}`,
 
-    "Finalizado": `E aí, ${p.cliente.nome}, tudo certo? \u{1F60B}\u{1F355} Seu pedido #${String(p.id).slice(-5)} foi finalizado! Obrigado por pedir com a gente. Bom apetite e volte sempre! \u{2764}\u{FE0F}\u{1F920}`
+    "Finalizado": `E aí, ${p.cliente.nome}, tudo certo? \u{1F60B}\u{1F355} Seu pedido #${(p.numeroPedido || String(p.id).slice(-5))} foi finalizado! Obrigado por pedir com a gente. Bom apetite e volte sempre! \u{2764}\u{FE0F}\u{1F920}`
   };
 
   const telefone = String(p.cliente.telefone).replace(/\D/g, "");
   const telefoneBR = telefone.startsWith("55") ? telefone : "55" + telefone;
-  const mensagem = mensagens[status] || `Olá, ${p.cliente.nome}! Atualização do pedido #${String(p.id).slice(-5)}: ${status}.`;
+  const mensagem = mensagens[status] || `Olá, ${p.cliente.nome}! Atualização do pedido #${(p.numeroPedido || String(p.id).slice(-5))}: ${status}.`;
 
 const parametros = new URLSearchParams();
 parametros.set("text", mensagem);

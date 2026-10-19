@@ -1,21 +1,26 @@
-PIZZARIA D’CASA — TESTE: SALVAR DADOS DO CLIENTE OPCIONALMENTE
+PIZZARIA D'CASA — CONTADOR SEQUENCIAL DE PEDIDOS
 
-O QUE MUDOU
-- Adicionada uma caixa de seleção no formulário do pedido: “Salvar meus dados neste dispositivo”.
-- Quando marcada, nome, telefone e endereço ficam salvos no armazenamento local deste navegador para preencher o próximo pedido.
-- Quando desmarcada, os dados salvos são removidos do navegador; os campos continuam utilizáveis para o pedido atual.
-- Não foi criado cadastro, senha ou conta de cliente.
-- Não foi criada nova tabela nem enviado esse salvamento opcional ao Supabase. O recurso usa apenas o armazenamento local do navegador.
-- Dados já salvos por versões anteriores continuam preenchidos e a opção aparece marcada, para deixar claro que estão salvos. O cliente pode desmarcar para removê-los.
-- O armazenamento local do projeto tem expiração de até 7 dias, conforme a lógica existente.
+O que foi adicionado:
+- Cada novo pedido recebe um número sequencial (#1, #2, #3...).
+- O número aparece no painel administrativo, na mensagem enviada para o WhatsApp e nas mensagens de atualização de status.
+- O botão “Resetar numeração” no painel faz com que o próximo pedido seja #1. Pedidos antigos mantêm o número que já tinham.
+- A contagem é centralizada no Supabase para evitar números duplicados se dois clientes pedirem ao mesmo tempo.
 
-COMO TESTAR
-1. Extraia o ZIP em uma pasta de teste ou faça backup da versão publicada antes de substituir arquivos.
-2. Abra o cardápio e vá ao formulário do pedido.
-3. Preencha nome, telefone e endereço com a caixa desmarcada; feche e reabra o cardápio/recarregue a página. Os dados não devem persistir.
-4. Marque a caixa e preencha os dados; recarregue a página. Os dados devem aparecer preenchidos e a caixa marcada.
-5. Desmarque a caixa e recarregue; os dados salvos devem desaparecer.
-6. Faça também um pedido de teste para confirmar que o fluxo normal de pedido continua funcionando.
+PASSO OBRIGATÓRIO ANTES DE TESTAR
+1. Abra o painel do Supabase do projeto usado pela pizzaria.
+2. Entre em SQL Editor > New query.
+3. Abra o arquivo SQL-CONTADOR-PEDIDOS.sql deste pacote, copie todo o conteúdo, cole no SQL Editor e execute uma vez.
+4. Confira se a execução terminou sem erro.
+5. Só então publique os arquivos do pacote na hospedagem.
+
+TESTE RECOMENDADO
+1. Faça um pedido de teste e confirme que aparece como Pedido #1 no admin e no WhatsApp.
+2. Faça outro pedido e confirme que aparece como Pedido #2.
+3. No admin, clique em “Resetar numeração” e confirme.
+4. Faça outro pedido e confirme que ele recebe #1.
 
 IMPORTANTE
-Esta é uma versão de teste. Não foi feita uma compra real nem um teste de navegador conectado ao Supabase/Hostinger. Preserve uma cópia dos arquivos atuais antes de publicar.
+- O reset não apaga pedidos nem altera os números já atribuídos aos pedidos antigos.
+- A função de reset exige login autenticado no Supabase.
+- Faça backup dos arquivos atuais da hospedagem antes de substituir qualquer arquivo.
+- A validação feita aqui é sintática; o SQL e o fluxo precisam ser testados no projeto Supabase real antes de usar com clientes.

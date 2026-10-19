@@ -719,21 +719,33 @@ function enviarPedidoWhatsapp(evento) {
     status: "Recebido",
     dataHora: new Date().toISOString()
   };
-  salvarPedido(pedido);
-  registrarCliente({ nome, telefone, endereco });
+  const botaoEnviar = document.getElementById("btnEnviar");
+  // Abre a aba durante o clique para evitar bloqueio de pop-up enquanto o servidor responde.
+  const janelaWhatsApp = window.open("about:blank", "_blank");
+  if (botaoEnviar) { botaoEnviar.disabled = true; botaoEnviar.textContent = "Registrando pedido..."; }
+  salvarPedido(pedido).then((numeroPedido) => {
+    msg = msg.replace("*PEDIDO*", `*PEDIDO #${numeroPedido}*`);
+    if (janelaWhatsApp) janelaWhatsApp.location.href = `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`;
+    registrarCliente({ nome, telefone, endereco });
+    carrinho = [];
+    cupomAplicado = null;
+    elCupomInput.value = "";
+    elCupomStatus.classList.add("escondido");
+    salvarLS("carrinho", carrinho);
+    elObservacao.value = "";
+    limparLS("observacao");
+    atualizarCarrinho();
+    elModalCarrinho.classList.add("escondido");
+    mostrarToast(`✅ Pedido #${numeroPedido} registrado! Confira o WhatsApp.`);
+  }).catch((erro) => {
+    console.error("Falha ao registrar pedido:", erro);
+    if (janelaWhatsApp) janelaWhatsApp.close();
+    mostrarToast("⚠️ Não foi possível registrar o pedido. Confira sua conexão e tente novamente.");
+  }).finally(() => {
+    if (botaoEnviar) { botaoEnviar.disabled = false; botaoEnviar.textContent = "📱 Enviar pedido no WhatsApp"; }
+  });
+  return;
 
-  window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
-
-  carrinho = [];
-  cupomAplicado = null;
-  elCupomInput.value = "";
-  elCupomStatus.classList.add("escondido");
-  salvarLS("carrinho", carrinho);
-  elObservacao.value = "";
-  limparLS("observacao");
-  atualizarCarrinho();
-  elModalCarrinho.classList.add("escondido");
-  mostrarToast("✅ Pedido enviado! Confira o WhatsApp.");
 }
 
 inicializarNuvem().then(() => {
