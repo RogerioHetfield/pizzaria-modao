@@ -95,6 +95,12 @@ function iniciar() {
   ["nome", "telefone", "endereco"].forEach(id => {
     document.getElementById(id).addEventListener("input", salvarDadosCliente);
   });
+  document.getElementById("salvarDadosCliente").addEventListener("change", () => {
+    salvarDadosCliente();
+    mostrarToast(document.getElementById("salvarDadosCliente").checked
+      ? "Dados salvos neste dispositivo."
+      : "Dados removidos do salvamento neste dispositivo.");
+  });
   elObservacao.addEventListener("input", () => salvarLS("observacao", elObservacao.value));
 
   elBusca.addEventListener("input", e => {
@@ -476,9 +482,21 @@ function atualizarBotaoEnvio() {
 function abrirCarrinho() { elModalCarrinho.classList.remove("escondido"); }
 
 function preencherFormularioCliente() {
-  document.getElementById("nome").value = dadosCliente.nome || "";
-  document.getElementById("telefone").value = dadosCliente.telefone || "";
-  document.getElementById("endereco").value = dadosCliente.endereco || "";
+  const dadosSalvos = lerLS("cliente");
+  const checkboxSalvar = document.getElementById("salvarDadosCliente");
+
+  // Dados guardados por uma versão anterior continuam preenchidos, com a opção visivelmente marcada.
+  if (dadosSalvos && typeof dadosSalvos === "object") {
+    dadosCliente = { nome: dadosSalvos.nome || "", telefone: dadosSalvos.telefone || "", endereco: dadosSalvos.endereco || "" };
+    checkboxSalvar.checked = true;
+  } else {
+    dadosCliente = { nome: "", telefone: "", endereco: "" };
+    checkboxSalvar.checked = false;
+  }
+
+  document.getElementById("nome").value = dadosCliente.nome;
+  document.getElementById("telefone").value = dadosCliente.telefone;
+  document.getElementById("endereco").value = dadosCliente.endereco;
 }
 
 function salvarDadosCliente() {
@@ -487,7 +505,12 @@ function salvarDadosCliente() {
     telefone: document.getElementById("telefone").value,
     endereco: document.getElementById("endereco").value
   };
-  salvarLS("cliente", dadosCliente);
+
+  if (document.getElementById("salvarDadosCliente").checked) {
+    salvarLS("cliente", dadosCliente);
+  } else {
+    limparLS("cliente");
+  }
 }
 
 // Monta um payload PIX estático no padrão EMV/BR Code, com valor definido.
@@ -713,7 +736,14 @@ function enviarPedidoWhatsapp(evento) {
   mostrarToast("✅ Pedido enviado! Confira o WhatsApp.");
 }
 
-iniciar();
+inicializarNuvem().then(() => {
+  produtos = carregarProdutos();
+  config = carregarConfig();
+  iniciar();
+}).catch(err => {
+  console.error("Não foi possível inicializar a nuvem", err);
+  iniciar();
+});
 
 window.addEventListener("load", () => {
   const ls = document.getElementById("loadingScreen");

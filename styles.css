@@ -3089,3 +3089,39 @@ body.com-barra { padding-bottom: 72px; }
   font-size: .78rem; overflow-wrap: anywhere;
 }
 .pix-copia-cola .btn-copiar-pix { margin-top: 8px; }
+
+
+/* Opção de salvar os dados do cliente neste dispositivo */
+.form-pedido .salvar-dados-cliente {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  font-weight: normal;
+}
+.form-pedido .salvar-dados-cliente input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--cor-principal);
+}
+.form-pedido .salvar-dados-cliente span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: #333;
+  line-height: 1.35;
+}
+.form-pedido .salvar-dados-cliente strong {
+  font-size: 0.9rem;
+}
+.form-pedido .salvar-dados-cliente small {
+  color: #666;
+  font-size: 0.78rem;
+}

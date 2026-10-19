@@ -19,28 +19,42 @@ let audioCtx = null;
 let imagemBase64 = null;
 
 async function iniciar() {
-  await inicializarSenhaAdmin();
+  await inicializarNuvem();
+  produtos = carregarProdutos();
+  config = carregarConfig();
+  categorias = carregarCategorias();
+  pedidos = carregarPedidos();
+  clientes = carregarClientes();
+  funcionarios = carregarFuncionarios();
+  cupons = carregarCupons();
+  idsConhecidos = new Set(pedidos.map(p => p.id));
 
   document.getElementById("subtitLogin").textContent = config.nomeLoja;
   document.title = config.nomeLoja + " - Admin";
 
-  if (sessionStorage.getItem("admin_logado") === "1") {
+  const { data: sessao } = await supabaseClient.auth.getSession();
+  if (sessao?.session) {
+    sessionStorage.setItem("admin_logado", "1");
     await mostrarPainel();
   }
 
   document.getElementById("formLogin").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const email = document.getElementById("loginEmail").value.trim();
     const senha = document.getElementById("loginSenha").value;
-    if (await verificarSenha(senha)) {
+    try {
+      await entrarAdminSupabase(email, senha);
       sessionStorage.setItem("admin_logado", "1");
       try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
       await mostrarPainel();
-    } else {
+    } catch (err) {
+      console.error(err);
       const erro = document.getElementById("loginErro");
+      erro.textContent = "E-mail ou senha incorretos. Confira sua conta no Supabase.";
       erro.classList.remove("escondido");
       document.getElementById("loginSenha").value = "";
       document.getElementById("loginSenha").focus();
-      setTimeout(() => erro.classList.add("escondido"), 3000);
+      setTimeout(() => erro.classList.add("escondido"), 4000);
     }
   });
 }
@@ -75,9 +89,7 @@ async function mostrarPainel() {
     });
   }
 
-  if (await ehSenhaPadrao()) {
-    document.getElementById("bannerSenhaPadrao").classList.remove("escondido");
-  }
+  document.getElementById("bannerSenhaPadrao")?.classList.add("escondido");
 
   document.querySelectorAll(".aba").forEach(btn => {
     btn.addEventListener("click", () => trocarAba(btn.dataset.aba));
@@ -168,9 +180,10 @@ document.getElementById("cfgPixTitular").value = config.pixTitular || "";
 document.getElementById("cfgPixChave").value = config.pixChave || "";
 }
 
-function sair() {
+async function sair() {
   if (!confirm("Deseja sair do painel?")) return;
   sessionStorage.removeItem("admin_logado");
+  await sairAdminSupabase();
   location.reload();
 }
 
@@ -1097,12 +1110,13 @@ async function trocarSenha(e) {
   const nova = document.getElementById("senhaNova").value;
   const conf = document.getElementById("senhaConfirma").value;
 
-  if (!(await verificarSenha(atual))) { erro.textContent = "❌ Senha atual incorreta."; erro.classList.remove("escondido"); return; }
+  const { data: userData } = await supabaseClient.auth.getUser();
+  if (!userData?.user) { erro.textContent = "❌ Faça login novamente para alterar a senha."; erro.classList.remove("escondido"); return; }
   if (nova !== conf) { erro.textContent = "❌ A nova senha e a confirmação não são iguais."; erro.classList.remove("escondido"); return; }
   if (nova.length < 4) { erro.textContent = "❌ A nova senha precisa ter pelo menos 4 caracteres."; erro.classList.remove("escondido"); return; }
   if (nova === atual) { erro.textContent = "❌ A nova senha deve ser diferente da atual."; erro.classList.remove("escondido"); return; }
 
-  await salvarNovaSenha(nova);
+  try { await salvarNovaSenha(nova); } catch (err) { erro.textContent = "❌ Não foi possível alterar a senha."; erro.classList.remove("escondido"); return; }
   document.getElementById("formSenha").reset();
   document.getElementById("bannerSenhaPadrao").classList.add("escondido");
   mostrarToast("🔒 Senha alterada com sucesso!");

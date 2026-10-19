@@ -4,6 +4,78 @@
    de 7 dias, produtos padrão e configurações da loja.
 ===================================================== */
 
+/* Supabase: chave pública (não usar chave secreta no navegador). */
+const SUPABASE_URL = "https://nmsochsryvnqdzmhbrzj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Nza6eCIFuZI_IMDfeaVtPA_5uG6ukzz";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const CHAVES_PUBLICAS_NUVEM = ["produtos", "config", "categorias", "cupons"];
+let nuvemPronta = false;
+let sincronizandoPedidos = false;
+
+async function inicializarNuvem() {
+  try {
+    const { data, error } = await supabaseClient.from("site_data").select("id,data");
+    if (error) throw error;
+    (data || []).forEach(row => {
+      if (row && typeof row.id === "string") {
+        localStorage.setItem(row.id, JSON.stringify({ valor: row.data, timestamp: Date.now() }));
+      }
+    });
+    const { data: authData } = await supabaseClient.auth.getSession();
+    const pedidosConsulta = authData?.session ? await supabaseClient.from("pedidos").select("id,dados,status,criado_em").order("criado_em", { ascending: false }) : { data: null, error: null };
+    const pedidosNuvem = pedidosConsulta.data; const erroPedidos = pedidosConsulta.error;
+    if (!erroPedidos && pedidosNuvem) {
+      const pedidos = pedidosNuvem.map(row => ({ ...(row.dados || {}), id: row.id, status: row.status || row.dados?.status || "Recebido", dataHora: row.dados?.dataHora || row.criado_em }));
+      localStorage.setItem("pedidos", JSON.stringify({ valor: pedidos, timestamp: Date.now() }));
+    }
+    nuvemPronta = true;
+  } catch (err) {
+    console.error("Falha ao sincronizar com Supabase:", err);
+    nuvemPronta = false;
+  }
+}
+
+async function gravarNaNuvem(chave, valor) {
+  if (!nuvemPronta) return;
+  try {
+    if (chave === "pedidos") {
+      const { data: authData } = await supabaseClient.auth.getSession();
+      if (!authData?.session) return;
+      if (sincronizandoPedidos) return;
+      sincronizandoPedidos = true;
+      const lista = Array.isArray(valor) ? valor : [];
+      for (const pedido of lista) {
+        const id = Number(pedido.id);
+        if (!Number.isSafeInteger(id) || id <= 0) continue;
+        const { error } = await supabaseClient.from("pedidos").upsert({ id, dados: pedido, status: pedido.status || "Recebido", criado_em: pedido.dataHora || new Date().toISOString() }, { onConflict: "id" });
+        if (error) throw error;
+      }
+      sincronizandoPedidos = false;
+      return;
+    }
+    if (["clientes", "funcionarios"].includes(chave)) {
+      const { data: authData } = await supabaseClient.auth.getSession();
+      if (!authData?.session) return;
+    }
+    if (["produtos", "config", "categorias", "cupons", "clientes", "funcionarios"].includes(chave)) {
+      const { error } = await supabaseClient.from("site_data").upsert({ id: chave, data: valor, updated_at: new Date().toISOString() }, { onConflict: "id" });
+      if (error) throw error;
+    }
+  } catch (err) {
+    sincronizandoPedidos = false;
+    console.error(`Erro ao salvar ${chave} no Supabase:`, err);
+    if (typeof mostrarToast === "function") mostrarToast("⚠️ Não foi possível sincronizar com a nuvem.");
+  }
+}
+
+async function entrarAdminSupabase(email, senha) {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
+  if (error) throw error;
+  return data;
+}
+async function sairAdminSupabase() { await supabaseClient.auth.signOut(); }
+
+
 const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 
 const CHAVES_PERMANENTES = [
@@ -57,6 +129,7 @@ const CONFIG_PADRAO = {
 function salvarLS(chave, valor) {
   const dados = { valor, timestamp: Date.now() };
   localStorage.setItem(chave, JSON.stringify(dados));
+  if (CHAVES_PERMANENTES.includes(chave)) void gravarNaNuvem(chave, valor);
 }
 
 function lerLS(chave) {
@@ -123,7 +196,19 @@ const STATUS_PEDIDO = ["Recebido", "Em preparo", "Saiu para entrega", "Finalizad
 function salvarPedido(pedido) {
   const lista = carregarPedidos();
   lista.unshift(pedido);
-  salvarLS("pedidos", lista);
+  localStorage.setItem("pedidos", JSON.stringify({ valor: lista, timestamp: Date.now() }));
+  // Inserção direta permite que o cliente envie o pedido sem poder ler os pedidos de terceiros.
+  if (nuvemPronta) {
+    void supabaseClient.from("pedidos").insert({
+      id: Number(pedido.id), dados: pedido, status: pedido.status || "Recebido",
+      criado_em: pedido.dataHora || new Date().toISOString()
+    }).then(({ error }) => {
+      if (error) {
+        console.error("Erro ao registrar pedido na nuvem:", error);
+        if (typeof mostrarToast === "function") mostrarToast("⚠️ Não foi possível registrar o pedido na nuvem. Tente novamente.");
+      }
+    });
+  }
 }
 
 function carregarClientes() { return lerLS("clientes") || []; }
@@ -154,31 +239,15 @@ function validarCupom(codigo, subtotal) {
   return { cupom: cup, desconto };
 }
 
-const SENHA_PADRAO = "admin";
-
-async function hashSenha(senha) {
-  const enc = new TextEncoder();
-  const data = enc.encode(senha + "::pizzaria-modao::salt::v1");
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function inicializarSenhaAdmin() {
-  if (!lerLS("senhaAdmin")) {
-    const hash = await hashSenha(SENHA_PADRAO);
-    salvarLS("senhaAdmin", hash);
-  }
-}
-
-async function verificarSenha(senha) {
-  return (await hashSenha(senha)) === lerLS("senhaAdmin");
-}
-
+const SENHA_PADRAO = "";
+async function hashSenha(senha) { return senha; }
+async function inicializarSenhaAdmin() { /* Autenticação gerenciada pelo Supabase Auth. */ }
+async function verificarSenha(senha) { return false; }
 async function salvarNovaSenha(novaSenha) {
-  salvarLS("senhaAdmin", await hashSenha(novaSenha));
+  const { error } = await supabaseClient.auth.updateUser({ password: novaSenha });
+  if (error) throw error;
 }
-
-async function ehSenhaPadrao() { return await verificarSenha(SENHA_PADRAO); }
+async function ehSenhaPadrao() { return false; }
 
 function estatisticasHoje() {
   const lista = lerLS("pedidos") || [];

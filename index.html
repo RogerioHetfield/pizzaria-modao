@@ -188,9 +188,14 @@
 
       <form id="formPedido" class="form-pedido">
         <h3>Seus dados</h3>
-        <input type="text" id="nome" placeholder="Seu nome" required />
-        <input type="tel" id="telefone" placeholder="Seu telefone (DDD + número)" required />
-        <input type="text" id="endereco" placeholder="Endereço completo" required />
+        <input type="text" id="nome" placeholder="Seu nome" autocomplete="name" required />
+        <input type="tel" id="telefone" placeholder="Seu telefone (DDD + número)" autocomplete="tel" required />
+        <input type="text" id="endereco" placeholder="Endereço completo" autocomplete="street-address" required />
+
+        <label class="salvar-dados-cliente" for="salvarDadosCliente">
+          <input type="checkbox" id="salvarDadosCliente" />
+          <span><strong>Salvar meus dados neste dispositivo</strong><small>Para agilizar meu próximo pedido neste navegador.</small></span>
+        </label>
 
         <button type="submit" id="btnEnviar" class="btn-whatsapp">
           📱 Enviar pedido no WhatsApp
@@ -252,6 +257,7 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

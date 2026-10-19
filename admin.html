@@ -16,16 +16,16 @@
       <h2>Painel Administrativo</h2>
       <p class="subtitulo-login" id="subtitLogin">Pizzaria D'Casa</p>
       <form id="formLogin">
+        <label>E-mail administrativo
+          <input type="email" id="loginEmail" required autofocus autocomplete="username" />
+        </label>
         <label>Senha de acesso
-          <input type="password" id="loginSenha" required autofocus autocomplete="current-password" />
+          <input type="password" id="loginSenha" required autocomplete="current-password" />
         </label>
         <button type="submit" class="btn-primario">Entrar</button>
         <p id="loginErro" class="erro-login escondido">❌ Senha incorreta</p>
       </form>
-      <p class="dica-login">
-        💡 Primeira vez? Senha inicial: <code>admin</code><br>
-        <strong>Mude assim que entrar, na aba Configurações!</strong>
-      </p>
+      <p class="dica-login">Entre com o e-mail e a senha cadastrados em Authentication → Users no Supabase.</p>
     </div>
   </div>
 
@@ -381,6 +381,7 @@
     <div id="toast" class="toast"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="data.js"></script>
   <script src="admin.js"></script>
 </body>
