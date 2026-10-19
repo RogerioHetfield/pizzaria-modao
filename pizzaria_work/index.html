@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pizzaria D'Casa - Cardápio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-emoji">🍕</div>
+      <h2 class="loading-nome" id="loadingNome">Carregando...</h2>
+      <div class="loading-bar"><div class="loading-progress"></div></div>
+      <p class="loading-sub">Preparando seu cardápio...</p>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <h1 class="logo">🍕 <span id="nomeLoja">Pizzaria D'Casa</span></h1>
+        <span id="statusLoja" class="status-loja">Carregando...</span>
+      </div>
+      <div class="header-acoes">
+        <button id="btnSobre" class="btn-cart" title="Informações da loja">ℹ️ Sobre</button>
+        <button id="btnAbrirCarrinho" class="btn-cart">
+          🛒 Carrinho (<span id="qtdCarrinho">0</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <div class="hero-texto">
+        <h2 class="hero-titulo" id="heroNomeLoja">Pizzaria D'Casa</h2>
+        <p class="hero-tagline">Peça rápido pelo WhatsApp 🍕</p>
+        <p class="hero-descricao" id="heroDescricao">Pizzas artesanais feitas com ingredientes frescos e muito amor.</p>
+        <button class="btn-hero" id="btnHeroCardapio">Ver cardápio completo ↓</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="urgencia-banner" id="urgenciaBanner">
+    🚀 Pedidos rápidos hoje — faça o seu agora!
+  </div>
+
+  <div class="busca-wrap" id="topCardapio">
+    <input type="search" id="campoBusca" placeholder="🔍 Buscar produto..." />
+  </div>
+
+  <nav class="categorias" id="categorias"></nav>
+
+  <section id="secDestaques" class="container sec-destaques escondido"></section>
+
+  <section class="sec-beneficios">
+    <div class="beneficios-inner">
+      <h2 class="beneficios-titulo">Por que pedir aqui? 🍕</h2>
+      <div class="beneficios-grid">
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">⚡</span>
+          <h3>Rápido</h3>
+          <p>Pedido feito em segundos direto pelo WhatsApp</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">✅</span>
+          <h3>Sem erros</h3>
+          <p>Tudo confirmado por mensagem, sem enganos</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">💬</span>
+          <h3>Direto</h3>
+          <p>Fale com a gente na hora, tire dúvidas</p>
+        </div>
+        <div class="beneficio-item fade-scroll">
+          <span class="beneficio-icon">❤️</span>
+          <h3>Com carinho</h3>
+          <p>Cada pizza feita com cuidado especial</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section id="listaProdutos" class="grid-produtos"></section>
+  </main>
+
+  <button id="btnFlutuante" class="btn-flutuante" title="Ver carrinho">
+    🛒 <span id="qtdFlutuante">0</span>
+  </button>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="modalSobre" class="modal escondido">
+    <div class="modal-conteudo">
+      <button class="fechar" data-fechar="modalSobre">×</button>
+      <h2>ℹ️ Sobre <span id="sobreNomeLoja"></span></h2>
+      <p id="sobreDescricao" class="sobre-descricao"></p>
+
+      <div class="sobre-bloco">
+        <h3>📍 Endereço</h3>
+        <p id="sobreEndereco"></p>
+      </div>
+
+      <div class="sobre-bloco">
+        <h3>📞 Contato</h3>
+        <p id="sobreWhatsapp"></p>
+        <div id="sobreRedes" class="sobre-redes"></div>
+      </div>
+
+      <div class="sobre-bloco">
+        <h3>🕒 Horário de funcionamento</h3>
+        <table class="tabela-horarios" id="sobreHorarios"></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalProduto" class="modal escondido">
+    <div class="modal-conteudo modal-produto">
+      <button class="fechar" data-fechar="modalProduto">×</button>
+      <img id="modalProdImg" src="" alt="" />
+      <div class="modal-prod-corpo">
+        <h2 id="modalProdNome"></h2>
+        <p class="modal-prod-categoria" id="modalProdCategoria"></p>
+        <p id="modalProdDescricao"></p>
+        <div class="preco" id="modalProdPreco"></div>
+        <button class="btn-add" id="modalAddBtn">Adicionar ao carrinho</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalCarrinho" class="modal escondido">
+    <div class="modal-conteudo">
+      <button class="fechar" data-fechar="modalCarrinho">×</button>
+      <h2>Seu Carrinho</h2>
+
+      <div id="itensCarrinho" class="itens-carrinho"></div>
+
+      <label class="campo-observacao">
+        Observações do pedido (ex: sem cebola, borda recheada)
+        <textarea id="observacao" rows="2" placeholder="Sua observação..."></textarea>
+      </label>
+
+      <div class="bloco-cupom">
+        <h3>🎟️ Cupom de desconto</h3>
+        <div class="cupom-linha">
+          <input type="text" id="cupomInput" placeholder="Digite o código" maxlength="20" />
+          <button type="button" id="btnAplicarCupom" class="btn-cupom">Aplicar</button>
+        </div>
+        <p id="cupomStatus" class="cupom-status escondido"></p>
+      </div>
+
+      <div class="bloco-pagamento">
+        <h3>💳 Formas de Pagamento</h3>
+        <div class="pagamento-opcoes">
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="PIX" checked /> <span>🔷 PIX</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Cartão de Crédito" /> <span>💳 Crédito</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Cartão de Débito" /> <span>💳 Débito</span></label>
+          <label class="opcao-pag"><input type="radio" name="pagamento" value="Dinheiro" /> <span>💵 Dinheiro</span></label>
+        </div>
+
+        <div id="blocoTroco" class="bloco-troco escondido">
+          <p>Precisa de troco?</p>
+          <div class="troco-opcoes">
+            <label><input type="radio" name="precisaTroco" value="nao" checked /> Não preciso</label>
+            <label><input type="radio" name="precisaTroco" value="sim" /> Sim</label>
+          </div>
+          <div id="campoTrocoValor" class="campo-troco-valor escondido">
+            <label>Troco para quanto? (R$)
+              <input type="number" id="trocoValor" min="0" step="0.01" placeholder="Ex: 100" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="totais">
+        <p>Subtotal: <strong>R$ <span id="subtotal">0,00</span></strong></p>
+        <p>Taxa de entrega: <strong>R$ <span id="taxa">0,00</span></strong></p>
+        <p id="linhaDesconto" class="linha-desconto escondido">
+          Desconto (<span id="dscPercentual"></span>): <strong>− R$ <span id="dscValor">0,00</span></strong>
+        </p>
+        <p class="total">Total: <strong>R$ <span id="total">0,00</span></strong></p>
+        <p id="avisoMinimo" class="aviso-minimo escondido"></p>
+      </div>
+
+      <form id="formPedido" class="form-pedido">
+        <h3>Seus dados</h3>
+        <input type="text" id="nome" placeholder="Seu nome" autocomplete="name" required />
+        <input type="tel" id="telefone" placeholder="Seu telefone (DDD + número)" autocomplete="tel" required />
+        <input type="text" id="endereco" placeholder="Endereço completo" autocomplete="street-address" required />
+
+        <label class="salvar-dados-cliente" for="salvarDadosCliente">
+          <input type="checkbox" id="salvarDadosCliente" />
+          <span><strong>Salvar meus dados neste dispositivo</strong><small>Para agilizar meu próximo pedido neste navegador.</small></span>
+        </label>
+
+        <button type="submit" id="btnEnviar" class="btn-whatsapp">
+          📱 Enviar pedido no WhatsApp
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modalPagamentoPix" class="modal escondido" role="dialog" aria-modal="true" aria-labelledby="tituloPagamentoPix">
+    <div class="modal-conteudo modal-pix">
+      <button type="button" class="fechar" id="btnFecharPix" aria-label="Fechar">×</button>
+      <div class="pix-icone">🔷</div>
+      <h2 id="tituloPagamentoPix">Pague com PIX</h2>
+      <p class="pix-instrucao">Faça o pagamento antes de enviar seu pedido para a pizzaria.</p>
+      <div class="pix-total">
+        <span>Valor do pedido</span>
+        <strong>R$ <span id="pixValorTotal">0,00</span></strong>
+      </div>
+      <div class="pix-dado">
+        <span>Tipo de chave</span>
+        <strong id="pixTipoExibido">Chave PIX</strong>
+      </div>
+      <div class="pix-qr-area">
+        <div id="pixQrCode" class="pix-qr-code" aria-label="QR Code de pagamento PIX"></div>
+        <p id="pixQrAviso" class="pix-qr-aviso">Preparando QR Code de pagamento...</p>
+      </div>
+      <div class="pix-dado">
+        <span>Chave PIX</span>
+        <strong id="pixChaveExibida" class="pix-chave"></strong>
+      </div>
+      <button type="button" id="btnCopiarPix" class="btn-copiar-pix">📋 Copiar chave PIX</button>
+      <details class="pix-copia-cola">
+        <summary>Problemas para escanear? Usar PIX Copia e Cola</summary>
+        <textarea id="pixCopiaECola" readonly rows="3" aria-label="Código PIX Copia e Cola"></textarea>
+        <button type="button" id="btnCopiarPixCopiaCola" class="btn-copiar-pix">📋 Copiar código PIX Copia e Cola</button>
+      </details>
+      <div class="pix-dado pix-titular">
+        <span>Nome do titular</span>
+        <strong id="pixTitularExibido"></strong>
+      </div>
+      <p class="pix-aviso">Depois de realizar o pagamento, toque em <strong>“Já paguei, enviar pedido”</strong>. A pizzaria ainda precisará confirmar o recebimento do PIX.</p>
+      <button type="button" id="btnConfirmarPix" class="btn-whatsapp btn-confirmar-pix">✅ Já paguei, enviar pedido</button>
+      <button type="button" id="btnVoltarPix" class="btn-voltar-pix">Voltar ao pedido</button>
+    </div>
+  </div>
+
+  <div id="barraInferior" class="barra-inferior escondido">
+    <div class="barra-info">
+      <span id="barraQtdTexto" class="barra-qtd-texto">0 itens</span>
+      <span class="barra-total-texto">R$ <strong id="barraTotal">0,00</strong></span>
+    </div>
+    <button id="barraBtnFinalizar" class="barra-btn-wpp">
+      📱 Finalizar no WhatsApp
+    </button>
+  </div>
+
+  <footer class="footer">
+    <p>© <span id="nomeLojaRodape">Pizzaria D'Casa</span> — Desenvolvido por RGR Systems</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

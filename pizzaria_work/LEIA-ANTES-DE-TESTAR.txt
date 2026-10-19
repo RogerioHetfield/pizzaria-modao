@@ -1,0 +1,21 @@
+PIZZARIA D’CASA — TESTE: SALVAR DADOS DO CLIENTE OPCIONALMENTE
+
+O QUE MUDOU
+- Adicionada uma caixa de seleção no formulário do pedido: “Salvar meus dados neste dispositivo”.
+- Quando marcada, nome, telefone e endereço ficam salvos no armazenamento local deste navegador para preencher o próximo pedido.
+- Quando desmarcada, os dados salvos são removidos do navegador; os campos continuam utilizáveis para o pedido atual.
+- Não foi criado cadastro, senha ou conta de cliente.
+- Não foi criada nova tabela nem enviado esse salvamento opcional ao Supabase. O recurso usa apenas o armazenamento local do navegador.
+- Dados já salvos por versões anteriores continuam preenchidos e a opção aparece marcada, para deixar claro que estão salvos. O cliente pode desmarcar para removê-los.
+- O armazenamento local do projeto tem expiração de até 7 dias, conforme a lógica existente.
+
+COMO TESTAR
+1. Extraia o ZIP em uma pasta de teste ou faça backup da versão publicada antes de substituir arquivos.
+2. Abra o cardápio e vá ao formulário do pedido.
+3. Preencha nome, telefone e endereço com a caixa desmarcada; feche e reabra o cardápio/recarregue a página. Os dados não devem persistir.
+4. Marque a caixa e preencha os dados; recarregue a página. Os dados devem aparecer preenchidos e a caixa marcada.
+5. Desmarque a caixa e recarregue; os dados salvos devem desaparecer.
+6. Faça também um pedido de teste para confirmar que o fluxo normal de pedido continua funcionando.
+
+IMPORTANTE
+Esta é uma versão de teste. Não foi feita uma compra real nem um teste de navegador conectado ao Supabase/Hostinger. Preserve uma cópia dos arquivos atuais antes de publicar.
